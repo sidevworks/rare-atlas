@@ -1,0 +1,685 @@
+{
+  "retrieved": "2026-10-03",
+  "review": "Checked twice. A first reader found each entry on the page named in evidenceUrl; a second, independent reader then reopened every page and tried to refute it. Only entries both confirmed are kept.",
+  "groups": [
+    {
+      "gene": "STXBP1",
+      "disease": "STXBP1-related disorders (STXBP1 encephalopathy)",
+      "organisation": "STXBP1 Foundation",
+      "organisationUrl": "https://www.stxbp1disorders.org/",
+      "notes": "Re-checked 2026-10-03 with curl (raw HTML, tags stripped); every cited page returned HTTP 200 and supports its claim. Corrections: (1) S-COMB is now confirmed, I read the page body. (2) Sources disagree on STARR sites: the STARR page lists five (CHOP, Children's Hospital Colorado, Stanford Medicine Children's Health, Texas Children's, Weill Cornell); the ENDD page lists four for STXBP1 (no Stanford); the Foundation's trials page lists states CO, NY, PA, TX only. (3) citizen.health/partners/stxbp1-foundation redirects to /ai-advocate/stxbp1-foundation. (4) STXBP1 Foundation appears nowhere on the DEE-P homepage (neither partner block) and is on the REN member map (Apex, NC). Census and pipeline pages were not opened.",
+      "assets": [
+        {
+          "kind": "natural history study",
+          "name": "STARR (STXBP1 Clinical Trial Ready): prospective natural history study, clinic visit every 6 months, five US sites (CHOP, Children's Hospital Colorado, Stanford Medicine Children's Health, Texas Children's, Weill Cornell); Ingo Helbig is study lead and multi-site PI; funded by the Foundation's FLOURISH campaign and the ENDD Center; page cites NCT06555965. Homepage news item dated 30 Sep 2026 says STARR continues through June 2028",
+          "evidenceUrl": "https://www.stxbp1disorders.org/starr",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "ENDD Center (Penn/CHOP) natural history programme covering STXBP1 and SYNGAP1 under one lead. Caveat from the same page: SYNGAP1 currently has one site (CHOP ENDD); STXBP1 has four (CHOP, Children's Hospital Colorado, Texas Children's, Weill Cornell)",
+          "evidenceUrl": "https://endd.med.upenn.edu/research/natural-history-study/",
+          "quote": "Dr. Ingo Helbig of CHOP leads the NHS for both STXBP1 and SYNGAP1.",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "ClinicalTrials.gov NCT06555965, brief title STXBP1 and SYNGAP1 Related Disorders Natural History Study; OBSERVATIONAL, RECRUITING; lead sponsor Children's Hospital of Philadelphia; collaborator STXBP1 Foundation; overall official Ingo Helbig, MD; conditions include STXBP1 Encephalopathy With Epilepsy and SYNGAP1-Related Intellectual Disability",
+          "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT06555965",
+          "confirmed": true
+        },
+        {
+          "kind": "biobank",
+          "name": "STXBP1 biorepository established in partnership with COMBINEDBrain; page directs researchers to the COMBINEDBrain full sample catalog for STXBP1 patient and control samples and a sample request form (catalog itself not opened)",
+          "evidenceUrl": "https://www.stxbp1disorders.org/researcher-resources",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "Floxed null Stxbp1 mouse on pure C57BL/6J background, offered by the Belgian CRO InnoSer (listed on the Foundation's researcher resources page)",
+          "evidenceUrl": "https://www.stxbp1disorders.org/researcher-resources",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "ENDD fully humanized STXBP1 mouse model, deposited at Jackson Labs pre-publication and also available on request; ENDD is developing a panel of patient-derived and CRISPR-engineered STXBP1 hiPSC lines (in development, not yet a catalogue)",
+          "evidenceUrl": "https://endd.med.upenn.edu/research/model-development-tools-for-researchers/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Registry comparison table on the Foundation's page: STARR, RARE-X, Simons Searchlight, Citizen Health, ESCO Natural History Study, ESCO Patient Registry. Same page also lists a Canadian national STXBP1 registry (UBC), the National Brain Gene Registry, and says RARE-X runs the caregiver surveys for STARR",
+          "evidenceUrl": "https://www.stxbp1disorders.org/clinicaltrialsandresearch",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Citizen Health partnership: gathers medical records, anonymised data used for research if the family opts in (original URL /partners/stxbp1-foundation redirects here)",
+          "evidenceUrl": "https://www.citizen.health/ai-advocate/stxbp1-foundation",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "S-COMB (STXBP1 Clinical Outcome Measures and Biomarker Consortium): network of researchers, healthcare providers, advocates and pharma; four objectives (outcome measures, guidance to the STARR and ESCO natural history studies, biomarkers, availability of preclinical models); quarterly meetings over Zoom. Now read in raw text and confirmed",
+          "evidenceUrl": "https://www.stxbp1disorders.org/scomb",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "Phenylbutyrate for Monogenetic Developmental and Epileptic Encephalopathy, NCT04937062: INTERVENTIONAL, EARLY_PHASE1, ACTIVE_NOT_RECRUITING; lead sponsor Weill Medical College of Cornell University (official Zachary Grinspan); collaborators Children's Hospital Colorado, SLC6A1 Connect, STXBP1 Foundation, Clara Inspired, University of Pennsylvania Orphan Disease Center, Horizon Therapeutics; conditions STXBP1 encephalopathy and SLC6A1 neurodevelopmental disorder",
+          "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT04937062",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "Trials listed for the community: EMERALD (relutrigine, Praxis, Phase 3, NCT07010471, fully enrolled), DEEp OCEAN (bexicaserin, Lundbeck/Longboard, Phase 3, NCT06719141, fully enrolled), STARS (UCB with Citizen Health, NCT05077904), FENDEEP fenfluramine (Spain, NCT05232630), two investigator-initiated RF003 AAV9-STXBP1 gene therapy trials in China (ChiCTR), plus observational phenylbutyrate studies covering STXBP1, SLC6A1 and SYNGAP (UCSD) and STXBP1 and SLC6A1 (Danish Epilepsy Centre). I also fetched NCT07010471 and NCT06719141: both PHASE3, ACTIVE_NOT_RECRUITING; CT.gov names Longboard Pharmaceuticals as sponsor of NCT06719141",
+          "evidenceUrl": "https://www.stxbp1disorders.org/clinicaltrialsandresearch",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "STXBP1",
+      "disease": "STXBP1-related disorders",
+      "organisation": "ESCO (European STXBP1 Consortium)",
+      "organisationUrl": "https://stxbp1eu.org/",
+      "notes": "HTTP 200. I additionally opened the trial record NCT06625112 that the previous researcher had not opened.",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "ESCO Patient Registry: European and Israeli STXBP1 registry; page says that as of January 2024 it covers the eight ESCO member countries; planned as the overarching infrastructure containing the prospective natural history study; caregiver and doctor both enter data, updated every 12 months",
+          "evidenceUrl": "https://stxbp1eu.org/esco-patient-registry/",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "NCT06625112, A Multicentric European Study to Promote Clinical Trial Readiness for STXBP1-related Disorders: OBSERVATIONAL, RECRUITING; lead sponsor European STXBP1 Consortium; nine collaborating hospitals (Filadelfia, Heidelberg, Antwerp, Gaslini, Sant Joan de Deu, Amsterdam UMC, Sheba, Aix-Marseille, Ruber Internacional)",
+          "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT06625112",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SCN2A",
+      "disease": "SCN2A-related disorders (DEE and autism/neurodevelopmental spectrum; gain- and loss-of-function)",
+      "organisation": "FamilieSCN2A Foundation",
+      "organisationUrl": "https://www.scn2a.org/",
+      "notes": "All claims hold. The cited URL ending in -2 redirects (HTTP 200) to /research/clinical-trials-and-research-opportunities/, used below. Page states all known loss-of-function and mixed-function candidates are preclinical. Conflict between sources on relutrigine: this page says the sponsor plans to file an NDA in 2026; the Cute Syndrome Foundation page says the application is already under FDA review with a decision expected by 27 Dec 2026. The page labels EMERALD with variants SCN2A or SCN8A, while its CT.gov record lists only a generic DEE condition. SCN2A Australia homepage (HTTP 200) shows 23 research projects, no named reusable asset. No biobank, cell-line or animal-model catalogue found on the pages opened.",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "DRAGONFLY Study: global SCN2A patient registry run with NORD, currently enrolling; page links to scn2a.iamrare.org (that site not opened)",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "SCN2A Clinical Trial Readiness Study (CTRS): completed one-year prospective study of outcome tools; results site, summary PDF and publications linked",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Simons Searchlight, described on the page as the first SCN2A registry and a natural history study for ongoing participants",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Citizen Health partnership: medical-record-based natural history dataset (original URL /partners/familiescn2a-foundation redirects here)",
+          "evidenceUrl": "https://www.citizen.health/ai-advocate/familiescn2a-foundation",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Clinical Picture Maker: video documentation project supplementing registry and natural history data. Same page also lists the Butterfly Study (bereaved caregivers) and SNORKLE (qualitative, patient-focused drug development)",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "research roadmap",
+          "name": "Published roadmap A Patient Organization Perspective: Charting the Course to a Cure for SCN2A-Related Disorders (Therapeutic Advances in Rare Disease, February 2024, vol. 5) plus a continuously updated treatment pipeline",
+          "evidenceUrl": "https://www.scn2a.org/research/research-roadmap-and-pipeline/",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "EMBRAVE: elsunersen (PRAX-222) antisense oligonucleotide, Praxis, Phase 1/2, for SCN2A gain-of-function early-onset DEE (enrolling in Brazil only, completed in US); mechanism-specific, GoF only. Page also lists EMBRAVE3, Phase 3, currently enrolling. CT.gov NCT05737784 (PRAX-222): PHASE1/PHASE2, ACTIVE_NOT_RECRUITING",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "EMERALD (Phase 3, enrolment complete) and EMBOLD (ended early on positive results; NDA filing planned for 2026 per this page): relutrigine (PRAX-562), Praxis; page lists variants as SCN2A or SCN8A. CT.gov NCT05818553 (EMBOLD): PHASE2/PHASE3, ACTIVE_NOT_RECRUITING, conditions SCN2A Encephalopathy and SCN8A Encephalopathy",
+          "evidenceUrl": "https://www.scn2a.org/research/clinical-trials-and-research-opportunities/",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "Global network of SCN2A scientists and clinician researchers (quarterly science talks), including Action Potential and Hodgkin Huxley grant recipients, the Medical and Scientific Advisory Board and the TASCO consultant team",
+          "evidenceUrl": "https://www.scn2a.org/research/research-network/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SYNGAP1",
+      "disease": "SYNGAP1-related disorders",
+      "organisation": "CURE SYNGAP1 (formerly SynGAP Research Fund / SRF)",
+      "organisationUrl": "https://curesyngap1.org/",
+      "notes": "All claims hold; two items previously unconfirmed are now confirmed because I opened them (Request NHS Data page; mouse-model link target). Correction to the earlier note that host repositories are not named: the linked iPSC Google Sheet names them (Simons SFARI / SFARI Base, Coriell, COMBINEDBrain). citizen.health/partners/srf redirects to /join/syngap1. syngap.org (Bridge the Gap) returns HTTP 200 with only an under-construction placeholder. ENDD's page lists only CHOP as a SYNGAP1 natural history site, while this group's ProMMiS page lists three.",
+      "assets": [
+        {
+          "kind": "natural history study",
+          "name": "ProMMiS (Prospective Multidisciplinary, Multisite Study): sites CHOP, Children's Hospital Colorado, Stanford Children's Health; 92 unique participants evaluated to end of 2024; protocol paper Helbig, McKee, Ruggiero et al. 2026 on clinical trial readiness in synaptic disorders",
+          "evidenceUrl": "https://curesyngap1.org/resources/studies/syngap1-prommis/",
+          "confirmed": true
+        },
+        {
+          "kind": "registry",
+          "name": "Three linked registries: Citizen Health digital natural history study, Simons Searchlight, RARE-X (SYNGAP1.Rare-X.org); page describes consent-based linkage of Citizen Health data with Simons Searchlight or with RARE-X",
+          "evidenceUrl": "https://curesyngap1.org/join-the-citizen-registry/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Citizen Health partner page for CURE SYNGAP1 (original /partners/srf redirects here)",
+          "evidenceUrl": "https://www.citizen.health/join/syngap1",
+          "confirmed": true
+        },
+        {
+          "kind": "cell line",
+          "name": "Catalogue of SYNGAP1 patient-derived iPSC lines with variants and ordering links. I opened the linked Google Sheet (CSV export, first rows): columns variant, line, type, gender, location, ID; host locations include Simons SFARI (SFARI Base), Coriell (e.g. GM27957) and COMBINEDBrain",
+          "evidenceUrl": "https://curesyngap1.org/ips-cell-models/",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "SYNGAP1 Mouse Models: nav link on the homepage points to a Google Drive file titled SYNGAP1 Mouse Models 5-26.pdf (file page HTTP 200, title read; PDF contents not read, so which models it lists is unverified)",
+          "evidenceUrl": "https://curesyngap1.org/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Request Citizen Health Natural History Study data: academic researchers can get de-identified, standardised medical-record summaries (genetics, EEG) for over 100 patients with pathogenic or likely pathogenic variants, via a Citizen researcher agreement and a Category 8 IRB template",
+          "evidenceUrl": "https://curesyngap1.org/request-nhs-data/",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "ENDD fully humanized SYNGAP1 mouse model deposited at Jackson Labs pre-publication; ENDD SYNGAP hiPSC panel in development (ENDD asset, not the patient group's own)",
+          "evidenceUrl": "https://endd.med.upenn.edu/research/model-development-tools-for-researchers/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "CDKL5",
+      "disease": "CDKL5 deficiency disorder (CDD)",
+      "organisation": "International Foundation for CDKL5 Research (IFCR)",
+      "organisationUrl": "https://www.cdkl5.com/",
+      "notes": "HTTP 200 on all pages. Corrections: (1) the cited enroll-now-from-home page does NOT say the longitudinal phase is enrolling and does not mention Colorado; both are on /help-get-cdkl5-clinical-trial-ready, added as its own asset. (2) The Variant Tool page is now opened and confirmed. (3) The nav item Research Toolbox points to /tools-for-researchers, the same page as the model list. (4) IFCR's own pages disagree on the number of Centers of Excellence: ten on the homepage and CoE page, eight on the trial-readiness page. (5) The Coriell iPSC biorepository IFCR links to was established by the Penn Orphan Disease Center and the Loulou Foundation, per Coriell's Mission page, not by IFCR. CDKL5 is not on the Simons Searchlight gene list.",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "Connect CDKL5: homepage counts 500+ patients and 45+ countries. The page calls it a platform for being counted and kept informed; it does not describe research data collection, so treat it as a contact registry",
+          "evidenceUrl": "https://cdkl5.com/",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "International CDKL5 Clinical Research Network (ICCRN): the International CDKL5 Disorder Database (Telethon Kids Institute, Perth, est. 2012) teamed with the US CDKL5 Centers of Excellence in 2019; study Multi-Site Validation of Biomarkers and Core Clinical Outcome Measures for Clinical Trial Readiness in CDD, supported by NIH-NINDS U01NS114312-01A1",
+          "evidenceUrl": "https://cdkl5.com/enroll-now-from-home",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "ICCRN trial-readiness study phases: initial phase complete with 143 patients; longitudinal phase enrolling (five site visits over two to three years plus questionnaires); contact list headed by the Children's Hospital Colorado / University of Colorado ICCRN team, also Telethon Kids, CHOP, Boston Children's, Cleveland Clinic, St. Louis Children's, Texas Children's, NYU Langone, UCLA",
+          "evidenceUrl": "https://cdkl5.com/help-get-cdkl5-clinical-trial-ready",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "Ten IFCR-sponsored CDKL5 Centers of Excellence at US academic centres: Boston Children's, Children's Hospital Colorado, Montefiore, CHOP, Cleveland Clinic, Vanderbilt, NYU Langone, St. Louis Children's, Texas Children's, UCLA Mattel; IFCR funds the multi-centre research",
+          "evidenceUrl": "https://cdkl5.com/for-families/cdkl5-centers-of-excellence",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "Mouse models with repository links: MMRRC (floxed exon 4, id 50620; R175S missense, 50622; S855* nonsense, 66955) and JAX (knock-out 021967; R59X knock-in 028856; floxed exon 6 030523); ENU mutant zebrafish (ZFIN); two mouse phenotyping reports (PDFs, not opened)",
+          "evidenceUrl": "https://cdkl5.com/tools-for-researchers",
+          "confirmed": true
+        },
+        {
+          "kind": "cell line",
+          "name": "CDKL5 iPSC lines at the Coriell Institute (Orphan Disease Center Collection, CDKL5 BioRepository): lines from male and female patients with different mutations; male donors are somatic mosaics with paired wild-type lines treated as isogenic; CRISPR-corrected controls for female lines in development",
+          "evidenceUrl": "https://www.coriell.org/1/Orphan-Disease-Center-Collection/CDKL5-BioRepository",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "CDKL5 Variant Tool: web widget built with the Lal research team to help interpret variants of uncertain significance; page links to cdkl5.com/webpymol.html (tool itself not opened)",
+          "evidenceUrl": "https://cdkl5.com/cdlk5-variant-tool",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "CDKL5",
+      "disease": "CDKL5 deficiency disorder (CDD)",
+      "organisation": "Loulou Foundation",
+      "organisationUrl": "https://www.louloufoundation.org/",
+      "notes": "HTTP 200 via curl. All four claims hold. The homepage still describes the 27-28 October 2025 Forum in Boston in the future tense, so part of it is stale. Added: the Foundation is a co-founder of the Coriell CDKL5 iPSC biorepository.",
+      "assets": [
+        {
+          "kind": "natural history study",
+          "name": "CANDID (acronym on the record), NCT05373719, Observational Study in Patients With CDKL5 Deficiency Disorder (official title: Endpoint Enabling Study): lead sponsor Loulou Foundation, OBSERVATIONAL, ACTIVE_NOT_RECRUITING, enrolment 112, started 2022-09-30",
+          "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT05373719",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "CDKL5 Forum: annual international scientific meeting hosted every year since 2015 (nearly 200 attendees at the most recent), plus an online researcher portal at cdkl5forum.org (portal not opened)",
+          "evidenceUrl": "https://www.louloufoundation.org/",
+          "confirmed": true
+        },
+        {
+          "kind": "research funding programme",
+          "name": "CDKL5 Pilot Grant Programme with annual awardee lists (2019 to 2026 present on the page); homepage says over 100 projects in more than 60 labs on four continents since 2015",
+          "evidenceUrl": "https://www.louloufoundation.org/grants-awards.html",
+          "confirmed": true
+        },
+        {
+          "kind": "therapeutic programme",
+          "name": "Elaaj Bio, a wholly owned subsidiary of the Foundation, advancing an investigational CDKL5 AAV gene therapy with the CDMO Viralgen (news item dated 5 May 2026); preclinical, not a registered trial",
+          "evidenceUrl": "https://www.louloufoundation.org/",
+          "confirmed": true
+        },
+        {
+          "kind": "cell line",
+          "name": "Coriell CDKL5 BioRepository governance: established by the Orphan Disease Center (orphandiseasecenter.med.upenn.edu) and the Loulou Foundation with Coriell, to store and distribute quality-controlled CDD iPSCs paired with isogenic controls; the Penn CDKL5 Program of Excellence is in partnership with the Loulou Foundation",
+          "evidenceUrl": "https://www.coriell.org/1/Orphan-Disease-Center-Collection/CDKL5-BioRepository/Mission-and-Organization",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SCN8A",
+      "disease": "SCN8A-related disorders (DEE and milder phenotypes)",
+      "organisation": "International SCN8A Alliance",
+      "organisationUrl": "https://scn8aalliance.org/",
+      "notes": "Reproduced: every scn8aalliance.org page returns HTTP status 500 to curl yet delivers the full body. I also loaded two of the pages (brain bank, registry) in a real browser pane and they render normally with the same text, so the content is real; a re-fetch script must not reject on status code. Correction: the cited registry page does NOT name Michael Hammer, the University of Arizona, SEHRF, REDCap or a participant count; those details live on other pages (CRN page names Hammer; partners page gives the over-200 figure and the SEHRF / scn8a.net home; scn8a.net carries the Arizona ethics approval and REDCap link). The registry asset is split accordingly. Partners page confirms the Alliance was formed from Wishes for Elliott and SEHRF; the brain bank page calls DEE-P Connections its sister organisation. SCN8A is not on the Simons Searchlight list.",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "International SCN8A Registry, described on this page only as the most comprehensive caregiver-reported longitudinal SCN8A dataset; no operator, host or count is given on this page",
+          "evidenceUrl": "https://scn8aalliance.org/scn8a-registry/",
+          "confirmed": true
+        },
+        {
+          "kind": "registry",
+          "name": "Registry provenance: founded by Dr. Hammer; longitudinal data on over 200 SCN8A individuals worldwide; continues to operate as scn8a.net under the non-profit home of SEHRF (figure is from an undated history section of the partners page, so may be old)",
+          "evidenceUrl": "https://scn8aalliance.org/partners/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "SCN8A Gene Variant Lookup Tool: variant positions on NaV1.6 and how often each has been observed, drawn from registry and published data; button links to scn8a.net/gene-variant-search/",
+          "evidenceUrl": "https://scn8aalliance.org/scn8a-registry/",
+          "confirmed": true
+        },
+        {
+          "kind": "biobank",
+          "name": "SCN8A Brain Tissue Trust: brain tissue donation programme with the Maryland Brain Bank, an NIH NeuroBioBank site",
+          "evidenceUrl": "https://scn8aalliance.org/scn8a-brain-bank/",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "SCN8A Collaborative Research Network (CRN): family engagement (registry and prospective study through Michael Hammer, ambassadors, Global Leaders Alliance), clinicians network with a case conference series, science consortium with a data work group, industry advisory board, research roundtables, biennial conference",
+          "evidenceUrl": "https://scn8aalliance.org/crn/",
+          "confirmed": true
+        },
+        {
+          "kind": "research roadmap",
+          "name": "SCN8A Research Roadmap: 2024 roadmap meeting and publication, to be reassessed at the CRN meeting on 28 July (Orlando). I also opened the roadmap page: it calls this the first global SCN8A research roadmap, built on the Consensus on the Diagnosis and Treatment of SCN8A-Related Disorders; five working subgroups. Whether the Consensus is the first of its kind is not stated on the pages read",
+          "evidenceUrl": "https://scn8aalliance.org/scn8a-research-roadmap/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SCN8A",
+      "disease": "SCN8A-related disorders",
+      "organisation": "The Cute Syndrome Foundation",
+      "organisationUrl": "https://thecutesyndrome.com/",
+      "notes": "HTTP 200; all four claims hold. Listed on the REN member map (Troy, NY). The page calls EMBOLD a Phase 3 study; CT.gov registers NCT05818553 as Phase 2/3. Its regulatory status statement (application under FDA review) conflicts with FamilieSCN2A's page (filing planned for 2026).",
+      "assets": [
+        {
+          "kind": "research funding programme",
+          "name": "Nearly $500,000 in SCN8A research grants since 2015; SCN8A Research Grants Program run with international SCN8A advocacy organisations (link to scn8agrants.org), guided by the SCN8A Research Roadmap; a 2019 SCN8A Research Roundtable in Raleigh",
+          "evidenceUrl": "https://thecutesyndrome.com/scn8a-research/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Citizen Health partnership for SCN8A families: medical-record organisation, optional de-identified data contribution to research (links to a citizen.health SCN8A caregiver guide)",
+          "evidenceUrl": "https://thecutesyndrome.com/scn8a-research/",
+          "confirmed": true
+        },
+        {
+          "kind": "registry",
+          "name": "Points families to the SCN8A Registry Research Study created and managed by the Hammer Lab, University of Arizona (links to scn8a.net)",
+          "evidenceUrl": "https://thecutesyndrome.com/scn8a-research/",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "EMBOLD: relutrigine (PRAX-562), Praxis, NCT05818553, in SCN8A- and SCN2A-related DEE; page says the trial is completed and the application is under FDA review with a decision expected by 27 December 2026. Also lists DEEp OCEAN (NCT06719141, enrolment complete, more than 350 participants); Kayak study (NBI-921352, Neurocrine) discontinued",
+          "evidenceUrl": "https://thecutesyndrome.com/clinical-trials/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SCN8A",
+      "disease": "SCN8A-related disorders",
+      "organisation": "Shay Emma Hammer Research Foundation (SEHRF)",
+      "organisationUrl": "https://shaysgift.org/",
+      "notes": "HTTP 200. The sentence the earlier researcher could not read is now read: the models classify variants as gain- or loss-of-function and predict clinical subgroup and progression. New on the same page: a knock-in gain-of-function mouse and a matching iPSC line, which partly fills the previously reported gap of no SCN8A models (these are lab assets; no catalogue or distribution terms are stated).",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "Home of the International SCN8A Registry portal: questionnaire collecting variants, clinical features, developmental history, medications, brain scans and EEG; approved by the University of Arizona Human Subjects Committee; Join link goes to a University of Arizona REDCap survey; variant search and medication guide on the site",
+          "evidenceUrl": "https://scn8a.net/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Hammer Lab machine-learning tools built on registry and electronic medical-record data for diagnosis, prognosis and treatment; models classify variants as gain- or loss-of-function and predict clinical subgroup and progression; longitudinal clinical timelines",
+          "evidenceUrl": "https://shaysgift.org/lab-research/",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "Hammer Lab knock-in gain-of-function mouse carrying the patient-derived SCN8A N1768D variant on C57BL/6",
+          "evidenceUrl": "https://shaysgift.org/lab-research/",
+          "confirmed": true
+        },
+        {
+          "kind": "cell line",
+          "name": "Human iPSC line with the SCN8A N1768D variant, established with Dr. Lalitha Madhavan",
+          "evidenceUrl": "https://shaysgift.org/lab-research/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "KCNQ2",
+      "disease": "KCNQ2-related disorders (KCNQ2 DEE and self-limited epilepsy)",
+      "organisation": "KCNQ2 Cure Alliance",
+      "organisationUrl": "https://www.kcnq2cure.org/",
+      "notes": "HTTP 200; all claims hold. I also opened the two linked Google Sheets (CSV export, first rows only): both are public and populated. This page still shows DEEp OCEAN as currently enrolling, which conflicts with ClinicalTrials.gov (ACTIVE_NOT_RECRUITING) and with the STXBP1, SCN2A and Cute pages. KCNQ2 is not on the Simons Searchlight list. No clinic-based prospective natural history study or KCNQ2-specific interventional trial on the pages opened.",
+      "assets": [
+        {
+          "kind": "biobank",
+          "name": "KCNQ2 Biorepository with COMBINEDBrain: urine, plasma, whole blood, dried blood spot cards from 26 affected individuals and 13 controls, over 20 variants, ages 1.5 to 14; requestable by academic and industry researchers (post dated 25 February 2026, with a 2026 collection roadshow schedule)",
+          "evidenceUrl": "https://www.kcnq2cure.org/2026/02/25/kcnq2-biorepository/",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "Rodent catalogue: maintained list of genetic mouse models for KCNQ2. Sheet opened: about 35 CSV rows, columns mutation, domain, functional change, patient diagnosis, functional effect, phenotype, notes, links; first row points to JAX lines",
+          "evidenceUrl": "https://www.kcnq2cure.org/research-resources/",
+          "confirmed": true
+        },
+        {
+          "kind": "cell line",
+          "name": "iPSC catalogue of patient-derived KCNQ2 lines. Sheet opened: about 35 CSV rows, columns cell line, variant, consequence, diagnosis, age band, sex, availability, location, contact, publications; first entries held at Radboudumc Stem Cell Technology Center",
+          "evidenceUrl": "https://www.kcnq2cure.org/research-resources/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "Citizen Health KCNQ2 digital natural history study from medical records",
+          "evidenceUrl": "https://www.kcnq2cure.org/recruiting-research-studies/",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "KCNQ2 Portal and Phenotype Observational Study (consent, caregiver survey, optional interview) and the international KCNQ2 Speech and Feeding Study (KCNQ2-DEE, five languages)",
+          "evidenceUrl": "https://www.kcnq2cure.org/recruiting-research-studies/",
+          "confirmed": true
+        },
+        {
+          "kind": "research funding programme",
+          "name": "KCNQ2 Currents Grant Program: year-round rolling RFP for basic, translational or clinical KCNQ2 research; academic applicants worldwide",
+          "evidenceUrl": "https://www.kcnq2cure.org/grant-program/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "KCNQ2",
+      "disease": "KCNQ2-related epilepsy",
+      "organisation": "The Jack Pribaz Foundation (KCNQ2.org)",
+      "organisationUrl": "https://kcnq2.org/",
+      "notes": "HTTP 200; both claims hold. Currency warning strengthened: rikee.org states it was last updated 1/10/2016 and carries a 2015-2020 copyright. Funding relationship between the Foundation and RIKEE is not stated on the pages read. Not found on the REN member map text.",
+      "assets": [
+        {
+          "kind": "registry",
+          "name": "RIKEE patient database: registration by email to the Cooper Lab, Baylor College of Medicine, Houston, where the database is housed",
+          "evidenceUrl": "https://kcnq2.org/register-your-child-in-the-rikee-patient-database/",
+          "confirmed": true
+        },
+        {
+          "kind": "data platform",
+          "name": "RIKEE website: curated variant database for KCNQ2 and KCNQ3 with phenotypes and related lab studies, maintained at Baylor under an IRB-approved protocol (page says last updated January 2016)",
+          "evidenceUrl": "https://www.rikee.org/",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SLC6A1",
+      "disease": "SLC6A1-related disorders (GAT-1; epilepsy with myoclonic-atonic seizures and neurodevelopmental disorder)",
+      "organisation": "SLC6A1 Connect",
+      "organisationUrl": "https://slc6a1connect.org/",
+      "notes": "HTTP 200; all claims hold. Detail placement: the registry page only says COMBINEDBrain and Across Matrix provide the platform for a natural history study and observational studies of exploratory treatments; the surveys-plus-records and worldwide details are on the newly-diagnosed page. The newly-diagnosed page also reports a pilot study of glycerol phenylbutyrate in nine SLC6A1 patients and one patient treated with gene therapy; no registered gene-therapy trial found. The biorepository page describes COMBINEDBrain as over 60 patient groups (COMBINEDBrain's own homepage now says more than 130 communities) and its collection schedule carries no year. No patient-derived cell-line catalogue found.",
+      "assets": [
+        {
+          "kind": "natural history study",
+          "name": "SLC6A1 natural history study on the Matrix platform (COMBINEDBrain with Across Matrix), also used for observational studies of exploratory treatments",
+          "evidenceUrl": "https://slc6a1connect.org/registry/",
+          "confirmed": true
+        },
+        {
+          "kind": "registry",
+          "name": "Patient Database (contact registry for trial and treatment news), the Matrix natural history study (caregiver surveys plus uploaded medical records, all families worldwide), Simons Searchlight (surveys) and Citizen Health (medical records)",
+          "evidenceUrl": "https://slc6a1connect.org/newly-diagnosed-2/",
+          "confirmed": true
+        },
+        {
+          "kind": "biobank",
+          "name": "COMBINEDBrain Biorepository participation: urine and blood (plasma, finger stick) from people with SLC6A1-related disorder and unaffected siblings, with caregiver surveys; uses a Clinical Research ID (CRID) to merge data across projects; goal of 20 samples per patient group",
+          "evidenceUrl": "https://slc6a1connect.org/combinedbrain-biorepository/",
+          "confirmed": true
+        },
+        {
+          "kind": "animal model",
+          "name": "Research tool lists: mouse model spreadsheet, Drosophila lines, commercial lines/plasmids/reagents, western blot publications. Links to Google Sheets and Drive files are present on the page; the files themselves were not opened, so contents are unverified",
+          "evidenceUrl": "https://slc6a1connect.org/scientific-resources/",
+          "confirmed": true
+        },
+        {
+          "kind": "research funding programme",
+          "name": "SLC6A1 Connect Research Grant Program for gene therapy research; no overhead rate taken",
+          "evidenceUrl": "https://slc6a1connect.org/scientific-resources/",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "Phenylbutyrate for monogenetic DEE, NCT04937062 (Weill Cornell, Early Phase 1, ACTIVE_NOT_RECRUITING): SLC6A1 Connect is a named collaborator; conditions STXBP1 and SLC6A1",
+          "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT04937062",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "gene": "SCN1A",
+      "disease": "Dravet syndrome and other SCN1A-related epilepsies",
+      "organisation": "Dravet Syndrome Foundation (DSF)",
+      "organisationUrl": "https://dravetfoundation.org/",
+      "notes": "HTTP 200; all claims hold. Precision: 500 is the Dravet Genome Study enrolment target; the page shows 96.5% of it reached, US residents only, cheek swab plus medical records. dravet.org.uk/research/ still returns HTTP 403. No DSF-run registry, biobank, cell-line or animal-model catalogue on the pages opened. The pipeline page notes that DEEp OCEAN includes SCN1A gain-of-function DEE, a mechanism split relevant to the atlas.",
+      "assets": [
+        {
+          "kind": "data platform",
+          "name": "Dravet Genome Study: launched by CHOP and funded by DSF; whole genome sequencing plus harmonised medical-record data, target 500 people with SCN1A-related epilepsy; study leads Ingo Helbig and Ethan Goldberg; de-identified data shared with approved researchers through platforms such as CAVATICA",
+          "evidenceUrl": "https://dravetfoundation.org/dravet-genome-study/",
+          "confirmed": true
+        },
+        {
+          "kind": "natural history study",
+          "name": "SCN1A Horizons: UK natural history study (Andreas Brunklaus, Glasgow), launched November 2023, up to 400 paediatric and adult patients; DSF grant support GBP 30,000",
+          "evidenceUrl": "https://dravetfoundation.org/scn1a-horizons-a-natural-history-study-of-scn1a-related-epilepsies-in-the-united-kingdom/",
+          "confirmed": true
+        },
+        {
+          "kind": "research roadmap",
+          "name": "Roadmap to a Cure, used by DSF and its advisory boards to evaluate proposals; over 80 grants worth over $14.1 million since 2009",
+          "evidenceUrl": "https://dravetfoundation.org/dsf-funded-research/roadmap-to-a-cure/",
+          "confirmed": true
+        },
+        {
+          "kind": "clinical trial",
+          "name": "Pipeline page lists EMPEROR (zorevunersen/STK-001, Stoke, Phase 3, NCT06872125), ENDEAVOR (ETX101 AAV9 gene therapy, Encoded, Phase 1/2, NCT05419492), DEEp SEA (bexicaserin, Lundbeck, Phase 3, NCT06660394), ARGUS (EPX-100 clemizole, Harmony, Phase 3, NCT04462770), ASCEND (ION337, Ionis, Phase 1/2, NCT07531745), a GABA biomarker study at Cook Children's (NCT05651204) and an adult natural history study at the University of Toronto. CT.gov checked for EMPEROR and ENDEAVOR (both RECRUITING) and DEEp SEA (ACTIVE_NOT_RECRUITING)",
+          "evidenceUrl": "https://dravetfoundation.org/dsf-funded-research/treatment-pipeline/",
+          "confirmed": true
+        },
+        {
+          "kind": "consortium membership",
+          "name": "DSF Research Roundtable; homepage counters: 16 research roundtables, 84 grants funded, 7 active clinical trials, $14.1M+ research funding",
+          "evidenceUrl": "https://dravetfoundation.org/",
+          "confirmed": true
+        }
+      ]
+    }
+  ],
+  "sharedInfrastructure": [
+    {
+      "name": "ENDD Center (Penn / CHOP) natural history programme and shared models",
+      "links": "STXBP1 and SYNGAP1: one natural history programme led by Ingo Helbig (verbatim sentence confirmed on the page); fully humanized mouse models for both genes deposited at Jackson Labs; hiPSC panels for both in development. Caveat: the page lists only CHOP as a SYNGAP1 site and four STXBP1 sites",
+      "evidenceUrl": "https://endd.med.upenn.edu/research/natural-history-study/",
+      "confirmed": true
+    },
+    {
+      "name": "ClinicalTrials.gov NCT06555965, STXBP1 and SYNGAP1 Related Disorders Natural History Study",
+      "links": "STXBP1 and SYNGAP1 in a single registered observational study (RECRUITING); sponsor CHOP, collaborator STXBP1 Foundation, official Ingo Helbig. The STARR page and the Foundation's trials page both cite this NCT number; ProMMiS (CURE SYNGAP1) uses overlapping sites but its page does not cite the NCT number",
+      "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT06555965",
+      "confirmed": true
+    },
+    {
+      "name": "Ingo Helbig (CHOP), a clinician-researcher across three communities",
+      "links": "STXBP1 (STARR study lead and multi-site PI), SYNGAP1 (ENDD natural history lead; first author of the ProMMiS protocol paper), SCN1A (Dravet Genome Study lead with Ethan Goldberg). Each role read on its own page",
+      "evidenceUrl": "https://dravetfoundation.org/dravet-genome-study/",
+      "confirmed": true
+    },
+    {
+      "name": "Shared clinical sites: CHOP, Children's Hospital Colorado, Stanford, Texas Children's",
+      "links": "SYNGAP1 ProMMiS sites are CHOP, Children's Hospital Colorado and Stanford Children's Health (this page); the STARR page lists the same three plus Texas Children's and Weill Cornell for STXBP1. For CDKL5, Children's Hospital Colorado, CHOP and Texas Children's are IFCR Centers of Excellence and Colorado is the ICCRN contact (cdkl5.com/for-families/cdkl5-centers-of-excellence and /help-get-cdkl5-clinical-trial-ready, not the enroll page first cited). Children's Hospital Colorado is also a collaborator on the STXBP1/SLC6A1 phenylbutyrate trial NCT04937062",
+      "evidenceUrl": "https://curesyngap1.org/resources/studies/syngap1-prommis/",
+      "confirmed": true
+    },
+    {
+      "name": "COMBINEDBrain consortium: shared biorepository and MATRIX natural history platform",
+      "links": "Confirmed on patient-group pages for STXBP1 (biorepository), KCNQ2 (biorepository), SLC6A1 (biorepository and Matrix study; SLC6A1 Connect is listed on COMBINEDBrain's PAG Matrix Portals page, the only one of the eight there). SYNGAP1 evidence is now stronger than a logo: CURE SYNGAP1's iPSC sheet lists lines held at COMBINEDBrain. SCN2A still rests only on a logo image filename in the homepage carousel. The Membership page opens when cookies are kept (HTTP 200) but holds dues information, no member list. No CDKL5, SCN8A or SCN1A logo or mention seen",
+      "evidenceUrl": "https://combinedbrain.org/",
+      "confirmed": true
+    },
+    {
+      "name": "COMBINEDBrain biorepository collection roadshow shared by member groups",
+      "links": "SLC6A1 Connect's page lists collection events hosted by KCNQ2 Cure Alliance, STXBP1 Foundation, and SYNGAP1 Research Fund together with SLC6A1 Connect: four of the eight communities feed one biorepository. Schedule carries no year",
+      "evidenceUrl": "https://slc6a1connect.org/combinedbrain-biorepository/",
+      "confirmed": true
+    },
+    {
+      "name": "DEE-P Connections (DEEP) founding partners",
+      "links": "Founding Partners logo block (alt text read): FamilieSCN2A Foundation (SCN2A), International SCN8A Alliance (SCN8A), SLC6A1 Connect (SLC6A1), Dravet Syndrome Foundation (SCN1A), International Foundation for CDKL5 Research (CDKL5), KCNQ2 Cure Alliance (KCNQ2), Cure SYNGAP1 (SYNGAP1). STXBP1 Foundation is absent from the whole page",
+      "evidenceUrl": "https://dee-p.org/",
+      "confirmed": true
+    },
+    {
+      "name": "The Inchstone Project (run by DEEP): shared outcome-measure development for severely affected DEE patients",
+      "links": "Steering Committee names staff of KCNQ2 Cure Alliance (two people), International Foundation for CDKL5 Research, FamilieSCN2A Foundation and Dravet Syndrome Foundation, plus two Children's Colorado neurologists. FamilieSCN2A lists it as a completed study on its own page; the SCN8A Alliance registry page links to it",
+      "evidenceUrl": "https://dee-p.org/the-inchstone-project-overview/",
+      "confirmed": true
+    },
+    {
+      "name": "Gabi Conecker: DEEP co-founder and Executive Director, and founder of Wishes for Elliott (SCN8A)",
+      "links": "Person linking the SCN8A community to the cross-DEE consortium. Role at DEEP read on the Inchstone page; founding of Wishes for Elliott, which merged into the International SCN8A Alliance, read on scn8aalliance.org/partners/ (HTTP 500 with full body)",
+      "evidenceUrl": "https://dee-p.org/the-inchstone-project-overview/",
+      "confirmed": true
+    },
+    {
+      "name": "Rare Epilepsy Network (REN) membership",
+      "links": "Member map lists organisations for all eight genes: STXBP1 Foundation, FamilieSCN2A Foundation (and SCN2A Aust/NZ/Asia), Syngap Research Fund and Bridge the Gap SYNGAP, International Foundation for CDKL5 Research, International SCN8A Alliance / Cute Syndrome Foundation / Wishes for Elliott, KCNQ2 Cure Alliance, SLC6A1 Connect, Dravet Syndrome Foundation; COMBINEDBrain is also a member. Loulou Foundation and Jack Pribaz Foundation not found on the map",
+      "evidenceUrl": "https://www.rareepilepsynetwork.org/renmembermap",
+      "confirmed": true
+    },
+    {
+      "name": "REN Registry (PCORI-funded cross-disorder registry)",
+      "links": "Over 1,459 patients across 40 rare epilepsy disorders, accessible through the RDCA-DAP portal; the page does not list which of the eight genes are in it, so no gene-level edge can be drawn from it",
+      "evidenceUrl": "https://www.rareepilepsynetwork.org/registry",
+      "confirmed": true
+    },
+    {
+      "name": "Simons Searchlight (natural history database and biorepository)",
+      "links": "Gene list on the page includes STXBP1, SCN2A, SYNGAP1, SLC6A1 and SCN1A. CDKL5, SCN8A and KCNQ2 are absent from the page",
+      "evidenceUrl": "https://www.simonssearchlight.org/research/what-we-study/",
+      "confirmed": true
+    },
+    {
+      "name": "Citizen Health (medical-record-based digital natural history)",
+      "links": "STXBP1, SCN2A and SYNGAP1 confirmed on Citizen's own partner pages (the /partners/... URLs redirect to /ai-advocate/... or /join/syngap1, HTTP 200); KCNQ2, SLC6A1 and SCN8A (via the Cute Syndrome Foundation) confirmed on the patient groups' pages. Not seen for CDKL5 or SCN1A. The index page citizen.health/partners returns HTTP 404",
+      "evidenceUrl": "https://www.citizen.health/ai-advocate/stxbp1-foundation",
+      "confirmed": true
+    },
+    {
+      "name": "RARE-X data platform, with Citizen Health / Simons Searchlight / RARE-X record linkage",
+      "links": "STXBP1 (in the Foundation's registry table; RARE-X also runs STARR's caregiver surveys) and SYNGAP1 (SYNGAP1.Rare-X.org; CURE SYNGAP1 describes consent-based linkage of Citizen Health with Simons Searchlight or RARE-X). RARE-X's own site was not opened",
+      "evidenceUrl": "https://curesyngap1.org/join-the-citizen-registry/",
+      "confirmed": true
+    },
+    {
+      "name": "Praxis relutrigine (PRAX-562) trials EMBOLD (NCT05818553) and EMERALD (NCT07010471)",
+      "links": "SCN2A and SCN8A enrolled in the same sodium-channel trial: stated by both FamilieSCN2A and the Cute Syndrome Foundation, and the CT.gov record for NCT05818553 lists conditions SCN2A Encephalopathy and SCN8A Encephalopathy (Phase 2/3, ACTIVE_NOT_RECRUITING). EMERALD is a broader DEE trial also listed by STXBP1 Foundation and KCNQ2 Cure Alliance; its CT.gov condition field reads only Developmental and Epileptic Encephalopathy 1 (Phase 3, ACTIVE_NOT_RECRUITING). The two patient groups disagree on regulatory status (filing planned vs under FDA review)",
+      "evidenceUrl": "https://thecutesyndrome.com/clinical-trials/",
+      "confirmed": true
+    },
+    {
+      "name": "SCN2A/SCN8A Joint Research Roundtable (29 July 2026, Orlando) alongside the 2026 SCN2A Family and Professional Conference",
+      "links": "SCN2A and SCN8A research communities meeting jointly, with a shared poster call (abstracts were due 31 May 2026); SCN8A CRN meeting the day before (28 July). Page served with HTTP 500 status but full body; the event date has passed",
+      "evidenceUrl": "https://scn8aalliance.org/scn8a-crn/",
+      "confirmed": true
+    },
+    {
+      "name": "Phenylbutyrate programme: interventional trial NCT04937062 plus observational studies",
+      "links": "STXBP1 and SLC6A1 in one Weill Cornell trial with STXBP1 Foundation, SLC6A1 Connect, Children's Hospital Colorado and the Penn Orphan Disease Center as collaborators; STXBP1 Foundation's page also lists observational phenylbutyrate studies covering STXBP1, SLC6A1 and SYNGAP (UCSD) and STXBP1 and SLC6A1 (Danish Epilepsy Centre)",
+      "evidenceUrl": "https://clinicaltrials.gov/api/v2/studies/NCT04937062",
+      "confirmed": true
+    },
+    {
+      "name": "Lundbeck bexicaserin (LP352) DEE trials: DEEp OCEAN (NCT06719141) and DEEp SEA (NCT06660394)",
+      "links": "Gene-agnostic DEE trial listed by STXBP1 Foundation, FamilieSCN2A, KCNQ2 Cure Alliance and the Cute Syndrome Foundation (SCN8A); the Dravet arm (DEEp SEA) is on the Dravet Syndrome Foundation pipeline page, which adds that DEEp OCEAN takes SCN1A gain-of-function DEE. CT.gov names Longboard Pharmaceuticals as sponsor of both; both ACTIVE_NOT_RECRUITING (KCNQ2's page still says enrolling)",
+      "evidenceUrl": "https://www.stxbp1disorders.org/clinicaltrialsandresearch",
+      "confirmed": true
+    },
+    {
+      "name": "Penn Orphan Disease Center",
+      "links": "CDKL5: co-founder, with the Loulou Foundation, of the Coriell CDKL5 iPSC biorepository. STXBP1/SLC6A1: named collaborator on NCT04937062. Evidence URL corrected: the originally cited Coriell overview page never names the University of Pennsylvania; the Mission and Organization subpage does. Still a weak link: two separate roles, not one shared resource",
+      "evidenceUrl": "https://www.coriell.org/1/Orphan-Disease-Center-Collection/CDKL5-BioRepository/Mission-and-Organization",
+      "confirmed": true
+    }
+  ],
+  "gaps": "Outcome of the refutation pass (2026-10-03): I opened every evidenceUrl with curl and read the tag-stripped text. No asset claim was refuted outright. One shared-infrastructure entry stays unconfirmed (Northwestern channelopathy centre: the page names no gene). Three previously unconfirmed items are now confirmed because I read the pages (S-COMB, CURE SYNGAP1 Request NHS Data, CDKL5 Variant Tool), plus the SYNGAP1 mouse-model link, whose target file title I read.\n\nClaims that were attached to the wrong page and are corrected above:\n- CDKL5 ICCRN: the longitudinal-phase-enrolling statement and the Children's Hospital Colorado contact are on /help-get-cdkl5-clinical-trial-ready, not on /enroll-now-from-home.\n- SCN8A registry: the Alliance registry page does not name Michael Hammer, Arizona, SEHRF, REDCap or a count. Those are on the CRN page, the partners page and scn8a.net.\n- Penn Orphan Disease Center: the Coriell overview page does not name Penn; the Mission and Organization subpage does, and shows the Loulou Foundation as co-founder of that biorepository.\n- Redirects: the FamilieSCN2A URL ending -2 and all three citizen.health/partners/... URLs redirect to other paths (HTTP 200); final URLs are given above.\n\nGaps by gene, stated plainly:\n- SCN2A: no biobank, cell-line or animal-model catalogue found. COMBINEDBrain membership rests only on a logo filename.\n- SCN8A: no catalogue of models and no fluid biobank. Found only one lab mouse line and one iPSC line (Hammer Lab, N1768D) with no distribution terms, and a brain tissue donation programme. Registry is caregiver-reported; no clinic-based natural history study found. The over-200 participant figure is undated.\n- KCNQ2: no clinic-based prospective natural history study and no KCNQ2-specific interventional trial found. RIKEE looks unmaintained (last updated 2016).\n- SLC6A1: no patient-derived cell-line catalogue; no registered gene-therapy trial found. Tool lists exist only as unopened Drive files.\n- SCN1A: no DSF-run registry, biobank, cell-line or animal-model catalogue found. Not seen in Citizen Health or COMBINEDBrain.\n- SYNGAP1: mouse-model list exists but its contents were not read. Bridge the Gap SYNGAP site is an under-construction placeholder.\n- CDKL5: not in Simons Searchlight; no Citizen Health or COMBINEDBrain link seen. Connect CDKL5 is a contact platform, not a described research registry.\n- STXBP1: none of the eight is empty; STXBP1 is the only one absent from DEE-P.\n\nConflicts between sources (not resolved, both sides reported):\n- Relutrigine/EMBOLD status: FamilieSCN2A says NDA filing planned for 2026; Cute Syndrome Foundation says under FDA review, decision by 27 Dec 2026. Phase: Cute says Phase 3, ClinicalTrials.gov says Phase 2/3.\n- DEEp OCEAN: KCNQ2 Cure Alliance says currently enrolling; ClinicalTrials.gov and three other groups say enrolment complete. Sponsor: groups say Lundbeck, the record says Longboard Pharmaceuticals.\n- STARR sites: five (STARR page), four (ENDD), four states (Foundation trials page). SYNGAP1 natural history sites: three (CURE SYNGAP1) versus one (ENDD).\n- IFCR Centers of Excellence: ten on two pages, eight on a third.\n- COMBINEDBrain size: over 60 groups (SLC6A1 Connect page) versus more than 130 communities (COMBINEDBrain homepage).\n\nPages that failed or were degraded:\n- scn8aalliance.org: HTTP 500 on every page to curl, full body delivered; two pages also rendered normally in a browser pane.\n- dravet.org.uk/research/: HTTP 403, nothing read.\n- citizen.health/partners: HTTP 404.\n- syngap.org: HTTP 200, placeholder only.\n- combinedbrain.org/Membership: 302 to itself without cookies; HTTP 200 with a cookie jar, but no member list on it.\n\nNot opened: SYNGAP1 mouse-model PDF contents; SLC6A1 Drive files; COMBINEDBrain inventory; scn2a.iamrare.org; RARE-X; cdkl5forum.org; the CDKL5 variant widget; CDKL5 phenotyping PDFs; STXBP1 census and pipeline pages; Wishes for Elliott; European Dravet groups. Google Sheets opened only for their first rows (CURE SYNGAP1 iPSC, KCNQ2 rodent, KCNQ2 iPSC). ClinicalTrials.gov records fetched (limited fields): NCT06555965, NCT04937062, NCT05373719, NCT06625112, NCT07010471, NCT05818553, NCT06719141, NCT05737784, NCT06872125, NCT05419492, NCT06660394.\n\nQuotes: only one verbatim quote is given (ENDD), checked word for word against the page. I am limited to a single short quotation per response, so the quote field is omitted elsewhere; asset names are paraphrases, and every confirmed item can be re-fetched at its evidenceUrl to pull the supporting sentence."
+}

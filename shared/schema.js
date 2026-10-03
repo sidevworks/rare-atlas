@@ -101,6 +101,7 @@ export const LAYER = Object.freeze({ WIDE: 'wide', DEEP: 'deep' });
  * @property {{ id: string, label: string, centre: number[], size: number }[]} clusters
  * @property {Array<[string, string, number, number, number, number, number]>} points
  *   [id, name, x, y, z, clusterIndex, deep (1 or 0)]
+ *   x, y and z are between -1 and 1; the world scales them to its own space.
  * @property {{ builtAt: string, synthetic: boolean, counts: Object<string, number>, sources: Source[] }} build
  */
 
