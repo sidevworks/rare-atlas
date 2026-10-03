@@ -26,6 +26,7 @@ export const EVENT = Object.freeze({
   VISITOR_LEAVE: 'visitor:leave',       // {}
   SEARCH_SUBMIT: 'search:submit',       // { q }
   NODE_SELECT: 'node:select',           // { id }   clicked a star
+  LANGUAGE_CHANGE: 'language:change',   // { language: { code, name, english, dir } }
 });
 
 const target = new EventTarget();

@@ -8,16 +8,20 @@
 
 import { api } from '../api.js';
 import { emit, on, EVENT } from '../bus.js';
+import { getLanguage } from '../language.js';
 import { runTool } from '../retrieval.js';
 
 const CALLS_URL = 'https://api.openai.com/v1/realtime/calls';
 
 const MESSAGE = {
-  unsupported: 'This browser cannot open a microphone here. The typed search still works.',
-  micDenied: 'The microphone was not allowed. You can allow it in the browser settings, or type instead.',
-  noMic: 'No microphone was found. You can type instead.',
+  unsupported: 'This browser cannot open a live conversation here. The typed search still works.',
+  micOff: 'The microphone is off, so type your question. The agent will still answer aloud and in writing.',
   dropped: 'The voice connection dropped. Approach the desk again to reconnect.',
 };
+
+const languageNote = language =>
+  `The visitor has chosen ${language.english}. From now on speak and write only in ${language.english}, ` +
+  'whatever language earlier turns were in. Keep translating names to English for lookups.';
 
 export function createVoice() {
   let state = 'idle';
@@ -47,12 +51,15 @@ export function createVoice() {
 
   function startMeter(agentStream) {
     if (!audioContext) return;
-    const analysers = [micStream, agentStream].filter(Boolean).map(stream => {
+    const tap = stream => {
+      if (!stream) return null;
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
       audioContext.createMediaStreamSource(stream).connect(analyser);
       return analyser;
-    });
+    };
+    const micAnalyser = tap(micStream);
+    const agentAnalyser = tap(agentStream);
     const samples = new Uint8Array(128);
     let last = 0;
     const tick = now => {
@@ -60,7 +67,11 @@ export function createVoice() {
       if (now - last < 50) return;
       last = now;
       // While the agent speaks, show the agent; otherwise show the person.
-      const analyser = state === 'speaking' && analysers[1] ? analysers[1] : analysers[0];
+      const analyser = state === 'speaking' ? agentAnalyser : micAnalyser;
+      if (!analyser) {
+        emit(EVENT.VOICE_LEVEL, { level: 0 });
+        return;
+      }
       analyser.getByteTimeDomainData(samples);
       let sum = 0;
       for (const sample of samples) sum += (sample - 128) ** 2;
@@ -156,7 +167,7 @@ export function createVoice() {
 
   async function start() {
     if (peer || starting) return;
-    if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
+    if (!window.RTCPeerConnection) {
       setState('error', MESSAGE.unsupported);
       return;
     }
@@ -176,10 +187,13 @@ export function createVoice() {
     // Both of these are begun before the first await, so they still count as
     // part of the tap or key press that brought the visitor to the desk.
     // Phones refuse a microphone or a sound that no gesture asked for.
-    const micRequest = navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
-    const sessionRequest = api.realtimeSession(navigator.language || '');
+    const micRequest = navigator.mediaDevices?.getUserMedia
+      ? navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        })
+      : Promise.reject(new Error('This device offers no microphone.'));
+    micRequest.catch(() => {});
+    const sessionRequest = api.realtimeSession(getLanguage().code);
     sessionRequest.catch(() => {});
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -191,13 +205,14 @@ export function createVoice() {
     audioElement.autoplay = true;
     audioElement.playsInline = true;
 
+    // A refused or missing microphone does not end the conversation: the
+    // visitor types, and the agent still answers aloud and in writing.
+    let micOff = false;
     try {
       micStream = await micRequest;
-    } catch (error) {
-      starting = false;
-      stop();
-      setState('error', error.name === 'NotFoundError' ? MESSAGE.noMic : MESSAGE.micDenied);
-      return;
+    } catch {
+      micStream = null;
+      micOff = true;
     }
     if (abandoned()) return;
 
@@ -216,7 +231,8 @@ export function createVoice() {
           setState('error', MESSAGE.dropped);
         }
       };
-      micStream.getAudioTracks().forEach(track => peer.addTrack(track, micStream));
+      if (micStream) micStream.getAudioTracks().forEach(track => peer.addTrack(track, micStream));
+      else peer.addTransceiver('audio', { direction: 'recvonly' });
 
       channel = peer.createDataChannel('oai-events');
       channel.onmessage = message => {
@@ -228,7 +244,7 @@ export function createVoice() {
       };
       // The agent speaks first; its greeting is set on the server.
       channel.onopen = () => {
-        setState('listening');
+        setState('listening', micOff ? MESSAGE.micOff : undefined);
         send({ type: 'response.create' });
       };
 
@@ -284,6 +300,17 @@ export function createVoice() {
     emit(EVENT.VOICE_TRANSCRIPT, { role: 'person', text: clean, final: true });
     return true;
   }
+
+  // A change of language mid-conversation: tell the agent, and let it
+  // acknowledge in the new language so the switch is heard.
+  on(EVENT.LANGUAGE_CHANGE, ({ language }) => {
+    if (channel?.readyState !== 'open') return;
+    send({
+      type: 'conversation.item.create',
+      item: { type: 'message', role: 'system', content: [{ type: 'input_text', text: languageNote(language) }] },
+    });
+    send({ type: 'response.create' });
+  });
 
   on(EVENT.VISITOR_APPROACH, () => start());
   on(EVENT.VISITOR_LEAVE, () => stop());
