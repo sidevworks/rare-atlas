@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.vercel/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# Downloaded source files and the graph built from them. Both are reproduced
+# by the loader (see README), so neither is committed.
+data/raw/
+data/build/
+
+# Native build output
+mobile/android/app/build/
+mobile/ios/App/Pods/

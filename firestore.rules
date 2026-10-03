@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// The graph is built from open, public sources, so anyone may read it.
+// Nothing is written from a browser or an app: only the loader writes, with
+// the project owner's own credentials, which bypass these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

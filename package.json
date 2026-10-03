@@ -1,0 +1,21 @@
+{
+  "name": "rare-atlas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A voice-led atlas of the world's rare diseases, where every connection cites its source.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
