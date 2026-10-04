@@ -9,8 +9,12 @@ it, and a next step.
 Built for Hack-Nation's 7th Global AI Hackathon, challenge 05: *AI Atlas for
 the World's Rare Diseases* (OpenAI and the Buffalo Initiative).
 
-**Status: in progress.** This file describes the design. Each section is
-marked once the part it describes is working.
+**Live:** https://rare-atlas-si-devworks.vercel.app/world/index.html
+
+The graph holds 10,397 rare diseases and 324,787 sourced links (238,581 symptom
+links, 12,393 gene links, 73,813 similar-disease leads) in 27 clusters, plus a
+hand-checked layer for the developmental-epilepsy cluster: 12 patient
+organisations, 85 assets, 51 studies and 42 shared-work connections.
 
 ## The one rule
 
@@ -78,8 +82,40 @@ not medical advice.
 
 ## Running it
 
-To be written as each part lands: installing, the environment file, running
-the loader to reproduce the dataset, and starting the atlas locally.
+    npm install
+    cp .env.example .env.local     # add OPENAI_API_KEY and FIREBASE_PROJECT_ID
+    npm run dev                    # the atlas and its server on one port
+
+With no `FIREBASE_PROJECT_ID` and no local build, the server answers from a
+small sample that is labelled as sample data.
+
+## Reproducing the dataset
+
+    npm run load                   # downloads Mondo, HPO and Orphanet open files
+                                   # (about 120 MB) and builds data/build/
+    npm run load:check             # every link has a source; no dangling ids
+    node loader/deep/run.js        # adds the hand-checked layer from
+                                   # loader/deep/curated/groups.json
+    npm run load:upload            # writes the build to Firestore
+
+The upload needs `gcloud auth application-default login` and
+`FIREBASE_PROJECT_ID`. The build is deterministic: the same source files give
+the same graph.
+
+## How OpenAI is used
+
+- **Voice.** OpenAI Realtime over WebRTC (`gpt-realtime-2.1`). The server mints
+  a short-lived secret; the browser connects directly. The agent has five
+  lookups (`shared/tools.js`) and no other source of fact.
+- **The brief.** The server asks an OpenAI model for a proposal built only from
+  supplied links, then removes any paragraph that cites a link not in the graph.
+
+## Known limits
+
+- Mechanism (gain or loss of function per gene) is not in the graph yet.
+- Dravet syndrome (SCN1A) is missing from the hand-checked layer.
+- The world page is built in LiveLoop and stripped to a standalone page by
+  `liveloop/make-standalone.js`.
 
 ## Not medical advice
 
