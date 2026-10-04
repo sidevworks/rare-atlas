@@ -1,0 +1,254 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  background: var(--night-950);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* One screen, like a room: the page itself never scrolls, its parts do. */
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* The sky that shows if the library cannot be drawn. */
+  background: radial-gradient(120% 80% at 50% 0%, #0f1c3d 0%, var(--night-900) 48%, var(--night-950) 100%);
+  color: var(--star);
+  font: 400 15px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#world {
+  position: fixed;
+  inset: 0;
+}
+
+/* The layer lets touches through to the sky everywhere except on its own
+   parts, so the stars stay clickable around them. */
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#ui.has-side {
+  --side: var(--side-width);
+}
+
+#boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+  background: var(--night-900);
+  font: 400 19px/1.4 var(--serif);
+  text-align: center;
+}
+
+#boot p,
+.noscript {
+  margin: 0;
+}
+
+.noscript {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  padding: 24px;
+  background: var(--night-900);
+  font: 400 19px/1.4 var(--serif);
+  text-align: center;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.icon {
+  flex: none;
+  display: block;
+}
+
+/* Arrows that point along the reading direction turn round with it. */
+[dir='rtl'] .icon-back,
+[dir='rtl'] .icon-out {
+  transform: scaleX(-1);
+}
+
+/* The visitor's own disease. Nothing else in the atlas is gold. */
+.is-home {
+  color: var(--gold);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  background: var(--star);
+  color: var(--night-900);
+  font: 600 15px/1.2 var(--sans);
+  text-align: center;
+}
+
+.btn-quiet {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--star);
+}
+
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  color: var(--sky);
+  font: 600 14px/1.3 var(--sans);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.icon-btn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--star-dim);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    background: #fff;
+  }
+
+  .btn-quiet:hover {
+    background: var(--night-600);
+  }
+
+  .icon-btn:hover {
+    background: var(--night-600);
+    color: var(--star);
+  }
+
+  .link-btn:hover {
+    color: var(--star);
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  color: var(--star-dim);
+  font: 600 12px/1 var(--sans);
+  white-space: nowrap;
+}
+
+.count {
+  margin-inline-start: 6px;
+  color: var(--star-faint);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes land {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

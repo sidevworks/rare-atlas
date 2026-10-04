@@ -1,0 +1,572 @@
+/* The desk and what lies on it: source cards, gap cards, connections. */
+
+.desk {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line-strong);
+  border-radius: 16px 16px 0 0;
+  background: rgba(8, 15, 35, 0.97);
+}
+
+.desk[data-size='peek'] {
+  max-height: min(42vh, 380px);
+  max-height: min(42dvh, 380px);
+}
+
+.desk-head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 8px 6px 16px;
+  padding-inline: 16px 8px;
+}
+
+.desk-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.desk-name {
+  margin: 0;
+  font: 500 22px/1.2 var(--serif);
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
+}
+
+.desk-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 4px 0 0;
+  color: var(--star-faint);
+  font-size: 13px;
+}
+
+.desk-sub:empty {
+  display: none;
+}
+
+.desk-id {
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-home {
+  min-height: 36px;
+  color: var(--star-dim);
+  font-weight: 400;
+  gap: 0.3em;
+}
+
+.desk-tabs {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  padding-inline: 8px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.desk-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 0 10px;
+  border-bottom: 2px solid transparent;
+  color: var(--star-faint);
+  font: 600 14px/1 var(--sans);
+  white-space: nowrap;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--star);
+  color: var(--star);
+}
+
+/* The row scrolls sideways on a narrow phone, so the ring sits inside. */
+.tab:focus-visible {
+  outline-offset: -3px;
+}
+
+.tab-new {
+  margin-inline-start: 8px;
+  padding: 3px 7px;
+  border-radius: 9px;
+  background: var(--sky);
+  color: var(--night-900);
+  font-size: 11px;
+}
+
+.desk-body {
+  flex: 1 1 auto;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-height: 0;
+  padding: 16px 16px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.desk-body:focus-visible {
+  outline-offset: -2px;
+}
+
+.note,
+.part-note {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--star-faint);
+  font-size: 13.5px;
+}
+
+.empty {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--star-dim);
+  font: 400 16px/1.45 var(--serif);
+}
+
+.definition {
+  display: grid;
+  gap: 4px;
+  max-width: 70ch;
+}
+
+.definition-text {
+  margin: 0;
+  color: var(--star-dim);
+  font: 400 16px/1.5 var(--serif);
+}
+
+.definition-text.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.definition-from {
+  margin: 0;
+  color: var(--star-faint);
+  font-size: 12.5px;
+}
+
+/* ---- Groups of cards --------------------------------------------------- */
+
+.group {
+  display: grid;
+  gap: 8px;
+}
+
+.group-title,
+.part-title {
+  margin: 0;
+  color: var(--star-dim);
+  font: 600 14px/1.3 var(--sans);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 10px;
+}
+
+.cards-stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---- A source card -----------------------------------------------------
+   Solid outline: a source states it. Dashed outline: the atlas worked it
+   out, and it is a lead to check. */
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--night-700);
+  text-align: start;
+}
+
+.card[data-basis='inferred'] {
+  border: 1.5px dashed var(--line-strong);
+  background: transparent;
+}
+
+.card[data-fresh] {
+  animation: land 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--star-faint);
+  }
+}
+
+.card-about {
+  color: var(--star-faint);
+  font-size: 12.5px;
+}
+
+.card-statement {
+  color: var(--star);
+  font: 400 16px/1.42 var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  color: var(--star-dim);
+  font-size: 13px;
+}
+
+.card-source {
+  color: var(--star-faint);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.mark,
+.conf,
+.disputed {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* A filled dot for what a source states, an open dashed ring for what the
+   atlas inferred, a diamond where another source disagrees. */
+.mark-sign {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--star-dim);
+}
+
+.mark-inferred .mark-sign {
+  border: 1.5px dashed var(--star-dim);
+  background: none;
+}
+
+.conf-bars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.conf-bars i {
+  width: 4px;
+  height: 11px;
+  border-radius: 1px;
+  background: var(--line-strong);
+}
+
+.conf[data-level='high'] .conf-bars i,
+.conf[data-level='medium'] .conf-bars i:nth-child(-n + 2),
+.conf[data-level='low'] .conf-bars i:first-child {
+  background: var(--star);
+}
+
+.disputed {
+  color: var(--dissent);
+  font: 600 13px/1.3 var(--sans);
+}
+
+.disputed::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  background: var(--dissent);
+  transform: rotate(45deg);
+}
+
+/* ---- The gap card ------------------------------------------------------
+   Not an error and not an empty state: an answer. It has no fill, because
+   nothing was laid there. */
+
+.gap {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--star-faint);
+  border-radius: 5px;
+}
+
+.gap-title {
+  margin: 0;
+  font: 500 19px/1.3 var(--serif);
+  text-wrap: balance;
+}
+
+.gap-asked {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.gap-label,
+.gap h4 {
+  margin: 0 0 6px;
+  color: var(--star-faint);
+  font: 600 13px/1.3 var(--sans);
+}
+
+.gap-label {
+  margin: 0;
+}
+
+.gap-question {
+  font: italic 400 17px/1.4 var(--serif);
+}
+
+.gap-parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px 28px;
+}
+
+.ledger,
+.gap-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each place the atlas looked, a dotted rule, and what it gave. */
+.ledger li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ledger-name {
+  font: 400 15.5px/1.4 var(--serif);
+}
+
+.ledger-rule {
+  flex: 1;
+  min-width: 14px;
+  border-bottom: 1px dotted var(--line-strong);
+  transform: translateY(-4px);
+}
+
+.ledger-result {
+  color: var(--star-faint);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.gap-list li {
+  position: relative;
+  padding-inline-start: 16px;
+  font: 400 15.5px/1.45 var(--serif);
+}
+
+.gap-list li::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0.68em;
+  inset-inline-start: 2px;
+  width: 7px;
+  height: 1px;
+  background: var(--star-faint);
+}
+
+.gap-none {
+  margin: 0;
+  color: var(--star-faint);
+  font-size: 13px;
+}
+
+.gap-folded {
+  display: block;
+  padding: 0;
+}
+
+.gap-folded > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  color: var(--star-dim);
+  font: 400 15.5px/1.35 var(--serif);
+  cursor: pointer;
+}
+
+.gap-folded > .gap-parts {
+  padding: 6px 14px 16px;
+}
+
+/* ---- A connection ------------------------------------------------------ */
+
+.connection {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--night-800);
+}
+
+.connection[data-basis='inferred'] {
+  border: 1.5px dashed var(--line-strong);
+}
+
+.connection-head {
+  display: grid;
+  gap: 2px;
+}
+
+/* Where the link starts, a short line down, and where it leads: the same
+   line the sky draws, dashed when the link is inferred. */
+.path {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  margin: 0;
+  color: var(--star-dim);
+  font: 500 14px/1.3 var(--serif);
+}
+
+.path-line {
+  width: 0;
+  height: 16px;
+  margin-inline-start: 6px;
+  border-inline-start: 1.5px solid var(--line-strong);
+}
+
+.connection[data-basis='inferred'] .path-line {
+  border-inline-start-style: dashed;
+}
+
+.connection-name {
+  margin: 0;
+  font: 500 19px/1.25 var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.connection-says {
+  max-width: 70ch;
+  margin: 0;
+  font: 400 16px/1.45 var(--serif);
+}
+
+.connection-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px 24px;
+}
+
+.connection h4,
+.steps-own h4 {
+  margin: 0 0 8px;
+  color: var(--star-faint);
+  font: 600 13px/1.3 var(--sans);
+}
+
+/* An empty box before each: these are still to be checked. */
+.check-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-list li {
+  position: relative;
+  padding-inline-start: 22px;
+  font: 400 15.5px/1.45 var(--serif);
+}
+
+.check-list li::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0.32em;
+  inset-inline-start: 0;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--star-dim);
+  border-radius: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- Next steps -------------------------------------------------------- */
+
+.steps-for {
+  margin: 0;
+  font: 500 17px/1.3 var(--serif);
+}
+
+.steps-part {
+  display: grid;
+  gap: 12px;
+}
+
+.steps-unsupported {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.unsupported {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.unsupported-name {
+  margin: 0 0 2px;
+  font: 500 16px/1.3 var(--serif);
+}
+
+@media (min-width: 900px) {
+  .desk {
+    width: min(100% - 48px, 1280px);
+    margin-inline: auto;
+    border: 1px solid var(--line-strong);
+    border-bottom: 0;
+  }
+
+  .desk[data-size='peek'] {
+    max-height: min(44vh, 440px);
+    max-height: min(44dvh, 440px);
+  }
+
+  .desk-head {
+    padding-inline: 22px 12px;
+  }
+
+  .desk-tabs {
+    padding-inline: 14px;
+  }
+
+  .desk-body {
+    padding: 18px 22px 26px;
+  }
+}
