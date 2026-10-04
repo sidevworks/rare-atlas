@@ -3,7 +3,10 @@
 
 // The phone apps are served from their own local origin (Capacitor), so they
 // reach this server cross-origin. The web atlas is same-origin.
-const APP_ORIGINS = [/^capacitor:\/\/localhost$/, /^https?:\/\/localhost(:\d+)?$/];
+// The world is also built and run inside LiveLoop on sary-os.com, whose stage
+// is a sandboxed frame that sends the origin "null", as does a file opened
+// from disk. The graph is public data and the voice route is rate-limited.
+const APP_ORIGINS = [/^capacitor:\/\/localhost$/, /^https?:\/\/localhost(:\d+)?$/, /^https:\/\/(www\.)?sary-os\.com$/, /^null$/];
 
 export class HttpError extends Error {
   constructor(status, message) {
