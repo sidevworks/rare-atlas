@@ -91,7 +91,7 @@ function installMondoFloor(){
  };
  for(const a of[0,Math.PI])textPlane(hub,legendDraw,2.8,2.2,Math.sin(a)*.58,2.3,Math.cos(a)*.58,a);
  for(const a of[Math.PI/2,-Math.PI/2])textPlane(hub,(ctx,W,H)=>{ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);ctx.fillStyle="#d9e9ef";ctx.font="bold 44px Georgia";ctx.fillText("RARE ATLAS",28,64);ctx.fillStyle="#a9c4d0";ctx.font="24px sans-serif";ctx.fillText("Level −1 · the Mondo floor",28,110);ctx.fillStyle="#9fbdcd";ctx.font="20px sans-serif";["Galleries run clockwise from the landing.","Aisles every ten rings; names are alphabetical","along each ring, reading outward.","","Esc or the Library button returns upstairs."].forEach((t,i)=>ctx.fillText(t,28,160+i*32));},2.8,2.2,Math.sin(a)*.58,2.3,Math.cos(a)*.58,a);
- const stairsDown=new THREE.Group();stairsDown.position.set(0,0,HUB_R-1.2);hub.add(stairsDown);
+ const stairsDown=new THREE.Group();stairsDown.position.set(0,0,HUB_R-3.4);hub.add(stairsDown);
  cube(stairsDown,glow,0,.02,0,1.8,.02,.3);
 
  // ---------------------------------------------------------------- tiles
@@ -186,13 +186,13 @@ gl_FragColor=vec4(col,vAlpha);}`}));
   galleryLabels.clear();
   for(const s of layout.sectors){
    if(s.a1===s.a0)continue;const mid=(s.a0+s.a1)/2,cat=d.categories[s.c],colour=CATEGORY_COLOURS[s.c%24];
-   const r0=HUB_R-.55;const post=new THREE.Group();post.position.set(Math.sin(mid)*r0,LEVEL_Y,Math.cos(mid)*r0);post.rotation.y=mid+Math.PI;galleryLabels.add(post);
-   cube(post,metal,0,1.1,0,.05,2.2,.05);
-   textPlane(post,(ctx,W,H)=>{ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.fillStyle=colour;ctx.fillRect(0,0,14,H);ctx.fillStyle="#e4f0f5";ctx.font="bold 40px Georgia";ctx.fillText(cat.label.toUpperCase(),30,58);ctx.fillStyle="#a9c4d0";ctx.font="24px sans-serif";ctx.fillText(fmt(layout.counts[s.c])+" diseases · "+(cat.mondoLabel||""),30,98);},2.4,.7,0,2.0,0,0,true);
+   const r0=HUB_R-.35;const post=new THREE.Group();post.position.set(Math.sin(mid)*r0,LEVEL_Y,Math.cos(mid)*r0);post.rotation.y=mid+Math.PI;galleryLabels.add(post);
+   cube(post,metal,0,1.2,0,.05,2.4,.05);
+   textPlane(post,(ctx,W,H)=>{ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.fillStyle=colour;ctx.fillRect(0,0,14,H);ctx.fillStyle="#e4f0f5";ctx.font="bold 40px Georgia";ctx.fillText(cat.label.toUpperCase(),30,58);ctx.fillStyle="#a9c4d0";ctx.font="24px sans-serif";ctx.fillText(fmt(layout.counts[s.c])+" diseases · "+(cat.mondoLabel||""),30,98);},1.7,.5,0,2.4,0,0,true);
    const rm=HUB_R+(s.rOut-HUB_R)*.72,h=6.5+Math.min(5,(s.rOut-HUB_R)*.06),lw=Math.max(3,Math.min(10,3+(s.rOut-HUB_R)*.2));
    textPlane(galleryLabels,(ctx,W,H)=>{ctx.clearRect(0,0,W,H);ctx.fillStyle="rgba(8,20,32,.78)";ctx.beginPath();ctx.roundRect(0,0,W,H,40);ctx.fill();ctx.fillStyle=colour;ctx.fillRect(0,H-16,W,16);ctx.fillStyle="#eef6fa";ctx.font="bold "+Math.round(W*.075)+"px Georgia";ctx.textAlign="center";ctx.fillText(cat.label,W/2,H*.5);ctx.fillStyle="#b9d3e0";ctx.font=Math.round(W*.04)+"px sans-serif";ctx.fillText(fmt(layout.counts[s.c])+" rare diseases",W/2,H*.86);},lw,lw*.3,Math.sin(mid)*rm,LEVEL_Y+h,Math.cos(mid)*rm,0,true).userData.label=true;
   }
-  stairsDown.position.set(Math.sin(layout.sectors[0].a0-.05)*(HUB_R-1.2),0,Math.cos(layout.sectors[0].a0-.05)*(HUB_R-1.2));
+  stairsDown.position.set(Math.sin(layout.sectors[0].a0-.05)*(HUB_R-3.4),0,Math.cos(layout.sectors[0].a0-.05)*(HUB_R-3.4));
   refreshFilters();
  }
  function disposeTiles(){if(tiles){root.remove(tiles);tiles.geometry.dispose();tiles=null;}for(const o of [...galleryLabels.children]){galleryLabels.remove(o);}grid=null;}
@@ -311,8 +311,8 @@ gl_FragColor=vec4(col,vAlpha);}`}));
   await fade(true);
   state.level="mondo";if(inspector)inspector.hidden=true;hint.hidden=true;
   if(w.scene.fog){state.fogDensity=w.scene.fog.density;w.scene.fog.density=.0045;}
-  const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-1.2;
-  w.cam.p.set(Math.sin(a)*r,LEVEL_Y+EYE,Math.cos(a)*r);w.cam.target.set(Math.sin(a)*(r+4),LEVEL_Y+1.1,Math.cos(a)*(r+4));
+  const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-3.4;
+  w.cam.p.set(Math.sin(a)*r,LEVEL_Y+EYE,Math.cos(a)*r);w.cam.target.set(Math.sin(a)*(r+6),LEVEL_Y+.6,Math.cos(a)*(r+6));
   panel.hidden=matchMedia("(max-width:700px)").matches;dock.hidden=false;get("rmf-where").textContent="Mondo floor · "+(state.data?fmt(state.data.n)+" rare diseases":"loading");
   await fade(false);state.busy=false;canvas.focus({preventScroll:true});
  }
@@ -330,7 +330,7 @@ gl_FragColor=vec4(col,vAlpha);}`}));
  function toggleOverview(force){
   if(state.level!=="mondo")return;state.overview=force===undefined?!state.overview:force;get("rmf-overview").setAttribute("aria-pressed",String(state.overview));
   if(state.overview){const rOut=layout?Math.max(...layout.sectors.map(s=>s.rOut)):40;state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(0,LEVEL_Y+rOut*1.55,rOut*.55),target:new THREE.Vector3(0,LEVEL_Y,0),elapsed:0,duration:1.6};}
-  else{const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-1.2;flyTo(Math.sin(a)*r,Math.cos(a)*r,Math.sin(a)*(r+4),Math.cos(a)*(r+4),1.4);}
+  else{const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-3.4;flyTo(Math.sin(a)*r,Math.cos(a)*r,Math.sin(a)*(r+6),Math.cos(a)*(r+6),1.4);}
  }
 
  // ---------------------------------------------------------------- input
@@ -344,7 +344,7 @@ gl_FragColor=vec4(col,vAlpha);}`}));
   if(state.level==="mondo"){e.preventDefault();e.stopImmediatePropagation();state.drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};try{canvas.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(R.state.fly||window.RareAtlasWorkstations?.state?.seat)return;
   const b=canvas.getBoundingClientRect();ndc.set((e.clientX-b.left)/Math.max(1,b.width)*2-1,-(e.clientY-b.top)/Math.max(1,b.height)*2+1);ray.setFromCamera(ndc,w.camera);
-  if(ray.intersectObject(ground,true).length){e.preventDefault();e.stopImmediatePropagation();if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.2,STAIR.z),elapsed:0,duration:1.15};}}
+  if(ray.intersectObject(ground,true).length){e.preventDefault();e.stopImmediatePropagation();if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.7,STAIR.z),elapsed:0,duration:1.15};}}
  },true);
  on(window,"pointermove",e=>{
   if(state.level!=="mondo")return;
@@ -377,7 +377,7 @@ gl_FragColor=vec4(col,vAlpha);}`}));
  on(window,"keyup",e=>{state.keys.delete(e.key.toLowerCase());},true);
  on(window,"blur",()=>state.keys.clear());
  on(window,"click",e=>{if(state.level!=="mondo")return;const b=e.target.closest("button");if(b&&!panel.contains(b)&&!dock.contains(b)&&(b.dataset.collection!==undefined||["walk","overview","approach","tour","map"].includes(b.dataset.action)||b.id==="rac-computers"))ascend(true);},true);
- on(nav,"click",()=>{if(state.level==="mondo")return;if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.2,STAIR.z),elapsed:0,duration:1.15};canvas.focus({preventScroll:true});}});
+ on(nav,"click",()=>{if(state.level==="mondo")return;if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.7,STAIR.z),elapsed:0,duration:1.15};canvas.focus({preventScroll:true});}});
  on(get("rmf-descend"),"click",descend);on(get("rmf-up"),"click",ascend);on(get("rmf-overview"),"click",()=>toggleOverview());
  on(get("rmf-panel-toggle"),"click",()=>{panel.hidden=!panel.hidden;});
  on(get("rmf-search"),"input",search);
