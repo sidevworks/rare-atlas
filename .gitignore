@@ -15,3 +15,6 @@ data/build/
 # Native build output
 mobile/android/app/build/
 mobile/ios/App/Pods/
+
+# Merged exports built with `node liveloop/build.js --base <export.html>`
+liveloop/*.mondo-floor.html

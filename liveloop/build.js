@@ -106,6 +106,37 @@ ${sampleScript.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\$
 `;
 
 mkdirSync(path.join(repo, 'liveloop'), { recursive: true });
-const out = path.join(repo, 'liveloop/rare-atlas-mondo-floor.html');
-writeFileSync(out, html);
-console.log(`Wrote ${out} (${(html.length / 1024).toFixed(0)} KB)`);
+
+// --base <export.html>: splice the Mondo floor into a self-contained LiveLoop
+// export of the world (one that carries the runtime and the base document
+// itself) instead of writing the asset-fetching wrapper. --out sets the
+// output path; the default sits next to the export with ".mondo-floor.html".
+const args = process.argv.slice(2);
+const option = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
+const base = option('--base');
+if (base) {
+  const source = readFileSync(base, 'utf8');
+  const need = (text, what) => { if (!source.includes(text)) throw new Error(`The export does not look like the Rare Atlas world: ${what} not found.`); };
+  need('(async()=>{\n const notice=document.getElementById("startup");', 'the startup block');
+  need('   (${installAtlasPrint.toString()})();', 'the print extension');
+  need('  const startup=`\n', 'the startup template');
+  let merged = source;
+  if (merged.includes('function installMondoFloor(')) {
+    // Replace an earlier Mondo floor with this build of it.
+    const start = merged.indexOf('// The Mondo floor:');
+    const end = merged.indexOf('(async()=>{\n const notice');
+    merged = merged.slice(0, start) + merged.slice(end);
+    merged = merged.replace(/\n   \(\$\{installMondoFloor\.toString\(\)\}\)\(\);/, '');
+    merged = merged.replace(/\nwindow\.MONDO_FLOOR_SAMPLE=[^\n]*\n/, '\n');
+  }
+  merged = merged.replace('(async()=>{\n const notice=document.getElementById("startup");', floor + '\n(async()=>{\n const notice=document.getElementById("startup");');
+  merged = merged.replace('   (${installAtlasPrint.toString()})();', '   (${installAtlasPrint.toString()})();\n   (${installMondoFloor.toString()})();');
+  merged = merged.replace('  const startup=`\n', '  const startup=`\n' + sampleScript.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${'));
+  const target = option('--out') || base.replace(/\.html?$/i, '') + '.mondo-floor.html';
+  writeFileSync(target, merged);
+  console.log(`Wrote ${target} (${(merged.length / 1024).toFixed(0)} KB) from ${base}`);
+} else {
+  const out = path.join(repo, 'liveloop/rare-atlas-mondo-floor.html');
+  writeFileSync(out, html);
+  console.log(`Wrote ${out} (${(html.length / 1024).toFixed(0)} KB)`);
+}

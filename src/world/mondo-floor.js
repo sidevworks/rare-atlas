@@ -412,7 +412,7 @@ gl_FragColor=vec4(col,vAlpha);}`}));
     updateCards();
     state.near=false;hint.hidden=true;
    }else{
-    const nearStairs=R.state.walk&&!R.state.fly&&Math.hypot(w.cam.p.x-STAIR.x,w.cam.p.z-STAIR.z)<2.6&&!window.RareAtlasWorkstations?.state?.seat;
+    const nearStairs=R.state.walk&&!R.state.fly&&Math.hypot(w.cam.p.x-STAIR.x,w.cam.p.z-STAIR.z)<3.8&&!window.RareAtlasWorkstations?.state?.seat;
     state.near=nearStairs;hint.hidden=!nearStairs;
    }
   }
