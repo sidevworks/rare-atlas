@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050a13">
+<meta name="asksary-engine" content="threejs">
+<meta name="asksary-three-version" content="0.185.1">
+<title>Rare Atlas</title>
+<style>
+html,body{width:100%;height:100%;margin:0;background:#050a13;color:#dfebf2;font:14px system-ui}#startup{padding:24px}
+</style>
+<script data-asksary-runtime="threejs" src="/vendor/asksary3d/0.185.1/asksary-3d.min.js"></script>
+</head>
+<body>
+<div id="startup">Opening Rare Atlas…</div>
+<script>
+// The atlas extensions already running in the LiveLoop world (Project 83,
+// state 128): the computer section, its monitor output and the print tools.
+// Kept verbatim so the wrapper can carry them forward unchanged next to the
+// Mondo floor. Classic script: these are plain top-level functions.
+
+function installAtlasComputers(){
+ const A=window.app,R=window.RareAtlasInteractive;
+ if(!A?.world||!R)throw new Error("The existing atlas must be running.");
+ window.RareAtlasWorkstations?.dispose();
+ const {THREE}=window.AskSary3D,w=A.world,canvas=w.renderer.domElement;
+ const resources=[],off=[],stations=[],state={seat:null,raf:0,last:0,disposed:false,near:null};
+ const own=x=>(resources.push(x),x);
+ const on=(el,k,fn,opt)=>{el.addEventListener(k,fn,opt);off.push(()=>el.removeEventListener(k,fn,opt));};
+ const root=new THREE.Group();root.name="Atlas computer seating area";w.scene.add(root);
+ const box=own(new THREE.BoxGeometry(1,1,1)),plane=own(new THREE.PlaneGeometry(1,1));
+ const mat=(color,extra={})=>own(new THREE.MeshStandardMaterial({color,roughness:.65,metalness:.12,...extra}));
+ const wood=mat("#263f4b"),metal=mat("#71858a",{metalness:.75,roughness:.35}),black=mat("#0b1823"),fabric=mat("#63828a",{roughness:.95}),rug=mat("#233b49",{roughness:1});
+ const mesh=(parent,g,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;};
+ const cube=(p,m,x,y,z,sx,sy,sz)=>mesh(p,box,m,x,y,z,sx,sy,sz);
+ cube(root,rug,0,.021,11.55,10,.025,4.3);
+ const makeScreen=number=>{
+  const c=document.createElement("canvas");c.width=768;c.height=480;const ctx=c.getContext("2d");
+  ctx.fillStyle="#0b202e";ctx.fillRect(0,0,768,480);ctx.fillStyle="#c7e6ef";ctx.font="36px Georgia";ctx.fillText("Rare Atlas",40,63);
+  ctx.fillStyle="#9fbdcd";ctx.font="17px sans-serif";ctx.fillText("RESEARCH DIRECTORY  /  TERMINAL "+number,40,103);
+  ctx.strokeStyle="#466777";ctx.beginPath();ctx.moveTo(40,123);ctx.lineTo(728,123);ctx.stroke();
+  ["Genes & mechanisms","Conditions & phenotypes","Studies & registries","Communities & models"].forEach((t,i)=>{ctx.fillStyle=i===0?"#214554":"#142f40";ctx.fillRect(40,150+i*53,688,40);ctx.fillStyle="#c0d9e5";ctx.font="22px sans-serif";ctx.fillText(t,59,177+i*53);ctx.fillText("›",691,177+i*53);});
+  ctx.fillStyle="#e0cea4";ctx.font="17px sans-serif";ctx.fillText("SYNTHETIC CASE · USER NOTES UNVERIFIED",40,405);ctx.fillStyle="#92bccc";ctx.fillText("Walk up · E / Enter to sit",40,448);
+  const tx=own(new THREE.CanvasTexture(c));tx.colorSpace=THREE.SRGBColorSpace;return own(new THREE.MeshBasicMaterial({map:tx,toneMapped:false}));
+ };
+ for(let i=0;i<4;i++){
+  const group=new THREE.Group();group.position.set((i-1.5)*2.5,0,11);root.add(group);
+  cube(group,wood,0,.95,0,1.95,.12,.88);
+  for(const x of [-.84,.84])for(const z of [-.32,.32])cube(group,metal,x,.44,z,.055,.88,.055);
+  cube(group,black,0,1.43,-.22,1.28,.81,.085);mesh(group,plane,makeScreen(i+1),0,1.43,-.172,1.19,.72,1);
+  cube(group,metal,0,1.08,-.23,.065,.20,.06);cube(group,metal,0,1.018,-.21,.38,.026,.25);cube(group,black,-.12,1.023,.23,.69,.033,.22);
+  for(let row=0;row<3;row++)cube(group,metal,-.12,1.043,.17+row*.052,.61,.005,.014);
+  cube(group,metal,.47,1.035,.25,.08,.035,.13);cube(group,black,.73,.42,-.12,.24,.70,.45);
+  cube(group,fabric,0,.48,1.12,.57,.13,.56);cube(group,fabric,0,.84,1.37,.57,.64,.11);
+  for(const x of [-.25,.25])for(const z of [.90,1.34])cube(group,metal,x,.21,z,.042,.42,.042);
+  for(const x of [-.32,.32]){cube(group,metal,x,.65,1.14,.035,.28,.035);cube(group,wood,x,.78,1.08,.09,.045,.40);}
+  const light=new THREE.PointLight("#9fd2df",1.2,3,2);light.position.set(0,1.7,-.05);group.add(light);
+  stations.push({number:i+1,group,x:group.position.x,z:11});
+ }
+ const ui=document.getElementById("rai-ui");
+ if(!ui){root.removeFromParent();resources.forEach(r=>r.dispose());throw new Error("Existing atlas controls were not found.");}
+ const style=document.createElement("style");
+ style.textContent=`
+#rac-directory{position:absolute;left:50%;top:80px;bottom:78px;transform:translateX(-50%);width:min(730px,calc(100% - 40px));pointer-events:auto;background:#0b1e2cf5;border:1px solid #8ab8c755;border-radius:14px;display:flex;flex-direction:column;box-shadow:0 20px 70px #0008}
+#rac-directory[hidden],#rac-dock[hidden],#rac-hint[hidden]{display:none!important}
+#rac-directory header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #a4c8da30;gap:8px}
+#rac-directory strong{font:20px Georgia,serif}#rac-directory small{color:#acbac4;font-size:10px}
+#rac-directory .rac-tools{display:flex;gap:8px;padding:9px 13px}#rac-directory input{width:100%}
+#rac-directory .rac-content{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0}
+#rac-list{overflow:auto;padding:0 10px 12px;scrollbar-width:thin}
+#rac-list button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px}
+#rac-list small{display:block;margin-top:2px}#rac-detail{padding:10px 16px;overflow:auto;border-left:1px solid #a4c8da30}
+#rac-detail h2{font:24px Georgia,serif;margin:0 0 12px}#rac-detail p{color:#c2d7e2;font-size:12px;overflow-wrap:anywhere}
+#rac-detail button{margin-top:10px}#rac-directory footer{padding:6px 13px;border-top:1px solid #a4c8da30;color:#d8c699;font-size:10px}
+#rac-dock,#rac-hint{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#0b2030ef;border:1px solid #99c9dc55;border-radius:9px;padding:8px 12px;pointer-events:auto;white-space:nowrap}
+#rac-dock button{margin-left:8px}#rac-hint button{margin-left:10px}
+@media(max-height:540px){#rac-directory{top:68px;bottom:70px}#rac-directory header{padding:7px 12px}#rac-directory .rac-tools{padding:6px 12px}#rac-directory input{padding:6px 9px}}
+@media(max-width:700px){#rac-directory{top:115px;bottom:76px;width:calc(100% - 20px)}#rac-directory .rac-content{grid-template-columns:1fr 1fr}#rac-detail{padding:9px}#rac-directory strong{font-size:17px}#rac-dock,#rac-hint{max-width:calc(100% - 20px);white-space:normal;font-size:10px}}`;
+ document.head.appendChild(style);
+ const panel=document.createElement("section");panel.id="rac-directory";panel.hidden=true;panel.setAttribute("aria-label","Computer research directory");
+ panel.innerHTML=`<header><div><strong>Research directory</strong><br><small id="rac-terminal"></small></div><button id="rac-stand">Stand up · Esc</button></header><div class="rac-tools"><input id="rac-search" type="search" aria-label="Search the computer directory" placeholder="Search conditions, assets, communities or your notes…"></div><div class="rac-content"><div id="rac-list"></div><article id="rac-detail"></article></div><footer>Bundled synthetic atlas and your research objects only. No external database is searched.</footer>`;
+ const dock=document.createElement("div");dock.id="rac-dock";dock.hidden=true;dock.innerHTML=`<span id="rac-seat-label"></span><button id="rac-open">Directory</button><button id="rac-exit">Stand up</button>`;
+ const hint=document.createElement("div");hint.id="rac-hint";hint.hidden=true;hint.innerHTML=`<span id="rac-hint-text"></span><button id="rac-sit">Sit down</button>`;ui.append(panel,dock,hint);
+ const nav=document.createElement("button");nav.id="rac-computers";nav.textContent="Computers";nav.title="Walk to the seated research terminals";ui.querySelector(".ra-bar .ra-group").appendChild(nav);
+ const get=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const catalog=[
+ ["case","Condition A","Disease","Starting condition in the fictional research case."],
+ ["gene","GENE-A","Gene","A fictional reduced-function variant example."],
+ ["process","Reduced process X activity","Mechanism","A process-level comparison, not a treatment recommendation."],
+ ["neighbor","Condition B","Related condition","A candidate research neighbour in the synthetic dataset."],
+ ["registry","Registry template","Registry","A design to review for possible adaptation; patient data access is not implied."],
+ ["assay","Process-X cell assay","Model","An experimental method requiring validation."],
+ ["community","Community B research team","Community","A fictional partner, not a verified contact."],
+ ["counter","Condition C: a counterexample","Phenotype / counterexample","Similar symptoms, opposite direction of effect. Do not merge therapeutic strategies."],
+ ["report","Mechanism report","Paper","The source assertions in this case are entirely synthetic."]];
+ let entries=[],selection=null;
+ const inspect=entry=>{
+  if(entry.demo)R.inspect(entry.id);else{A.lastSelected=entry.id;for(const fn of A.events.select)try{fn(entry.id)}catch(e){console.warn(e);}}
+  panel.hidden=true;dock.hidden=false;
+ };
+ function showEntry(entry){
+  selection=entry;const detail=get("rac-detail");detail.replaceChildren();const h=document.createElement("h2");h.textContent=entry.label;detail.append(h);
+  for(const t of [entry.type,entry.summary,entry.source,entry.demo?"Synthetic teaching record—not medical evidence.":"User-supplied material; not independently verified."]){const p=document.createElement("p");p.textContent=t;detail.append(p);}
+  const b=document.createElement("button");b.textContent="Inspect in evidence desk";b.onclick=()=>inspect(entry);detail.append(b);
+  for(const el of get("rac-list").querySelectorAll("button"))el.setAttribute("aria-pressed",String(el.dataset.entry===entry.id));
+ }
+ function refresh(){
+  entries=catalog.map(([id,label,type,summary])=>({id,label,type,summary,source:"Synthetic demonstration — not medical evidence",demo:true}));
+  for(const d of R.packet.researchObjects){if(d.id.startsWith("rai-demo-"))continue;entries.push({id:d.id,label:d.title||d.kind,type:"Research object · "+d.kind,summary:d.annotation?.summary||"Research material retained on the desk or in its bound folio.",source:d.source||"No source supplied.",demo:false});}
+  const q=get("rac-search").value.trim().toLowerCase(),list=get("rac-list");list.replaceChildren();
+  const matches=entries.filter(e=>[e.label,e.type,e.summary,e.source].join(" ").toLowerCase().includes(q));
+  for(const entry of matches){const b=document.createElement("button");b.dataset.entry=entry.id;b.innerHTML=esc(entry.label)+"<small>"+esc(entry.type)+"</small>";b.onclick=()=>showEntry(entry);list.append(b);}
+  if(!matches.length){const p=document.createElement("p");p.textContent="No match in the local directory. No outside research was searched.";list.append(p);get("rac-detail").textContent="Try another term.";selection=null;}
+  else showEntry(matches.find(e=>e.id===selection?.id)||matches[0]);
+ }
+ function openDirectory(){
+  if(!state.seat)return;get("rai-inspector").hidden=true;panel.hidden=false;dock.hidden=true;
+  get("rac-terminal").textContent="TERMINAL "+state.seat.number+" · SYNTHETIC CASE / UNVERIFIED NOTES";refresh();get("rac-search").focus({preventScroll:true});
+ }
+ function sit(station){
+  if(state.seat||!station)return;A.demo++;R.state.fly=null;R.state.keys.clear();R.state.walk=false;get("rai-walk").setAttribute("aria-pressed","false");
+  state.seat=station;state.beforeInspector=get("rai-inspector").hidden;state.from=w.cam.p.clone();state.look=w.cam.target.clone();state.elapsed=0;
+  state.to=new THREE.Vector3(station.x,1.36,12.16);state.target=new THREE.Vector3(station.x,1.43,10.78);hint.hidden=true;get("rac-seat-label").textContent="Seated at terminal "+station.number;openDirectory();
+ }
+ function stand(){
+  if(!state.seat)return;const station=state.seat;state.seat=null;panel.hidden=dock.hidden=true;
+  w.cam.p.set(station.x,1.8,13.2);w.cam.target.set(station.x,1.43,10.8);R.state.fly=null;R.state.walk=true;R.state.keys.clear();get("rai-walk").setAttribute("aria-pressed","true");
+  if(!R.state.drawer)get("rai-inspector").hidden=state.beforeInspector;else get("rai-inspector").hidden=false;canvas.focus({preventScroll:true});
+ }
+ function approach(station){
+  if(state.seat)stand();R.state.walk=true;R.state.keys.clear();get("rai-walk").setAttribute("aria-pressed","true");
+  R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(station?station.x:0,1.8,station?13.2:15),target:new THREE.Vector3(station?station.x:0,1.43,11),elapsed:0,duration:1.15};canvas.focus({preventScroll:true});
+ }
+ on(nav,"click",()=>approach(null));on(get("rac-stand"),"click",stand);on(get("rac-exit"),"click",stand);on(get("rac-open"),"click",openDirectory);on(get("rac-sit"),"click",()=>sit(state.near));on(get("rac-search"),"input",refresh);
+ on(panel,"keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();stand();}});
+ on(window,"keydown",e=>{
+  if(state.seat){if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();stand();}else if(!ui.contains(e.target)){e.preventDefault();e.stopImmediatePropagation();}return;}
+  if(ui.contains(e.target)||e.target.isContentEditable)return;
+  if(state.near&&["e","Enter"].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();sit(state.near);}
+ },true);
+ on(window,"click",e=>{if(!state.seat)return;const b=e.target.closest("button");if(b&&(b.dataset.collection!==undefined||["walk","overview","approach","tour"].includes(b.dataset.action)))stand();},true);
+ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+ on(window,"pointerdown",e=>{
+  if(e.target!==canvas)return;if(state.seat){e.preventDefault();e.stopImmediatePropagation();get("rac-search").focus();return;}
+  const bounds=canvas.getBoundingClientRect();ndc.set((e.clientX-bounds.left)/Math.max(1,bounds.width)*2-1,-(e.clientY-bounds.top)/Math.max(1,bounds.height)*2+1);ray.setFromCamera(ndc,w.camera);
+  const hits=ray.intersectObject(root,true);if(!hits.length)return;let object=hits[0].object,station=null;
+  while(object&&!station){station=stations.find(s=>s.group===object);object=object.parent;}if(!station)return;
+  e.preventDefault();e.stopImmediatePropagation();const distance=Math.hypot(w.cam.p.x-station.x,w.cam.p.z-12.2);
+  if(R.state.walk&&!R.state.fly&&distance<1.85)sit(station);else approach(station);
+ },true);
+ const shift=new THREE.Vector3();
+ function tick(ms){
+  if(state.disposed)return;if(A.world!==w){dispose();return;}
+  const dt=state.last?Math.min(.05,(ms-state.last)/1000):0;state.last=ms;
+  if(!document.hidden){
+   if(state.seat){R.state.walk=false;R.state.fly=null;R.state.keys.clear();w.pointer.tx=w.pointer.ty=0;state.elapsed+=dt;const t=Math.min(1,state.elapsed/.6),ease=t*t*(3-2*t);w.cam.p.copy(state.from).lerp(state.to,ease);w.cam.target.copy(state.look).lerp(state.target,ease);}
+   else if(R.state.walk&&!R.state.fly){
+    for(const station of stations)for(const b of [{x:station.x,z:11,hx:1.12,hz:.58},{x:station.x,z:12.13,hx:.48,hz:.48}]){
+     const dx=w.cam.p.x-b.x,dz=w.cam.p.z-b.z;
+     if(Math.abs(dx)<b.hx&&Math.abs(dz)<b.hz){shift.set(0,0,0);if(b.hx-Math.abs(dx)<b.hz-Math.abs(dz))shift.x=(dx>=0?1:-1)*(b.hx-Math.abs(dx)+.005);else shift.z=(dz>=0?1:-1)*(b.hz-Math.abs(dz)+.005);w.cam.p.add(shift);w.cam.target.add(shift);}
+    }
+   }
+   state.near=null;
+   if(!state.seat&&R.state.walk&&!R.state.fly){let distance=1.85;for(const station of stations){const d=Math.hypot(w.cam.p.x-station.x,w.cam.p.z-12.35);if(d<distance){distance=d;state.near=station;}}}
+   hint.hidden=!state.near;if(state.near)get("rac-hint-text").textContent="Terminal "+state.near.number+" · E / Enter to sit and browse";
+  }
+  state.raf=requestAnimationFrame(tick);
+ }
+ function dispose(){
+  if(state.disposed)return;if(window.RareAtlasComputerSection?.owner?.root===root)window.RareAtlasComputerSection.dispose();
+  if(state.seat)stand();state.disposed=true;cancelAnimationFrame(state.raf);off.forEach(fn=>fn());root.removeFromParent();resources.forEach(r=>r.dispose());panel.remove();dock.remove();hint.remove();nav.remove();style.remove();
+ }
+ window.RareAtlasWorkstations={root,stations,state,sit,stand,approach,openDirectory,dispose};state.raf=requestAnimationFrame(tick);
+ return "Added four computer desks and seats. Existing research is retained.";
+}
+function moveAtlasComputers(){
+ const C=window.RareAtlasWorkstations,A=window.app;
+ if(!C?.root||!A?.world)throw new Error("Computer desks are not available.");
+ if(window.RareAtlasComputerSection?.owner===C)return "Computers already have their own section.";
+ const {THREE}=window.AskSary3D,w=A.world,dx=16,resources=[],own=o=>(resources.push(o),o);
+ for(const child of C.root.children)child.position.x+=dx;for(const station of C.stations)station.x=station.group.position.x;
+ C.root.name="Dedicated computer section — desks and seats";
+ if(C.state.seat){for(const key of ["from","look","to","target"])if(C.state[key])C.state[key].x+=dx;w.cam.p.x+=dx;w.cam.target.x+=dx;w.camera.position.x+=dx;w.camera.lookAt(w.cam.target);}
+ const section=new THREE.Group();section.name="Computer section — floor and sign";w.scene.add(section);
+ const box=own(new THREE.BoxGeometry(1,1,1)),floor=own(new THREE.MeshStandardMaterial({color:"#243b49",roughness:.95})),trim=own(new THREE.MeshStandardMaterial({color:"#6c858c",roughness:.5,metalness:.35}));
+ function block(m,x,y,z,sx,sy,sz){const o=new THREE.Mesh(box,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);section.add(o);return o;}
+ block(floor,16,-.045,11.65,13.2,.08,6.7);block(floor,8,-.045,14.15,16,.08,1.65);block(trim,16,.06,8.35,13.2,.12,.12);block(trim,22.55,.06,11.65,.12,.12,6.7);block(trim,12.8,1.3,9.45,.045,2.6,.045);block(trim,19.2,1.3,9.45,.045,2.6,.045);
+ const c=document.createElement("canvas");c.width=1024;c.height=192;const ctx=c.getContext("2d");
+ ctx.fillStyle="#102531";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,1018,186);ctx.textAlign="center";ctx.fillStyle="#d9e9ef";ctx.font="52px Georgia";ctx.fillText("COMPUTER SECTION",512,85);ctx.fillStyle="#a9c4d0";ctx.font="25px sans-serif";ctx.fillText("Research terminals · seated directory browsing",512,139);
+ const texture=own(new THREE.CanvasTexture(c));texture.colorSpace=THREE.SRGBColorSpace;
+ const sign=new THREE.Mesh(own(new THREE.PlaneGeometry(6.5,1.22)),own(new THREE.MeshBasicMaterial({map:texture,toneMapped:false})));sign.position.set(16,2.75,9.48);section.add(sign);
+ const nav=document.getElementById("rac-computers"),visit=e=>{e.preventDefault();e.stopImmediatePropagation();C.approach({x:16,z:11});};
+ if(nav){nav.title="Visit the dedicated computer section";nav.addEventListener("click",visit,true);}
+ const previousDispose=C.dispose;let disposed=false;
+ const handle={owner:C,root:section,offset:dx,dispose(){if(disposed)return;disposed=true;if(nav)nav.removeEventListener("click",visit,true);section.removeFromParent();resources.forEach(o=>o.dispose());if(window.RareAtlasComputerSection===handle)window.RareAtlasComputerSection=null;}};
+ window.RareAtlasComputerSection=handle;C.dispose=function(){handle.dispose();return previousDispose.call(C);};
+ return "Moved all four computers and seats into their own labelled section.";
+}
+function installAtlasMonitorOutput(){
+ const C=window.RareAtlasWorkstations,A=window.app,w=A?.world;
+ if(!C||!w)throw new Error("The existing computers must be available.");
+ window.RareAtlasMonitorOutput?.dispose();const {THREE}=window.AskSary3D;
+ const ui=document.getElementById("rai-ui"),panel=document.getElementById("rac-directory"),inspector=document.getElementById("rai-inspector");
+ const screens=C.stations.map(s=>({station:s,mesh:s.group.children.find(o=>o.isMesh&&o.geometry.type==="PlaneGeometry"&&o.material.map)}));
+ if(!ui||!panel||screens.some(s=>!s.mesh))throw new Error("Computer display surfaces were not found.");
+ const host=document.createElement("div");host.id="rac-monitor-output";host.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:40";
+ const marker=document.createComment("Directory original position");panel.before(marker);const imarker=inspector?document.createComment("Evidence original position"):null;if(imarker)inspector.before(imarker);
+ ui.append(host);host.append(panel);panel.classList.add("rac-physical-output");
+ const style=document.createElement("style");
+ style.textContent=`
+#rac-directory.rac-physical-output,#rai-inspector.rac-physical-output{position:absolute!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;width:1000px!important;height:605px!important;max-width:none!important;max-height:none!important;min-width:0!important;box-sizing:border-box!important;transform-origin:0 0!important;pointer-events:auto!important;background:#0b1e2c!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;overflow:auto!important}
+#rac-directory.rac-physical-output{font-size:20px}
+#rac-directory.rac-physical-output header{padding:14px 20px}
+#rac-directory.rac-physical-output strong{font-size:32px}
+#rac-directory.rac-physical-output small{font-size:16px}
+#rac-directory.rac-physical-output button,#rac-directory.rac-physical-output input{font-size:20px}
+#rac-directory.rac-physical-output .rac-tools{padding:10px 18px}
+#rac-directory.rac-physical-output .rac-content{grid-template-columns:1fr 1fr}
+#rac-directory.rac-physical-output #rac-list button{padding:10px 12px}
+#rac-directory.rac-physical-output #rac-detail{padding:16px 20px}
+#rac-directory.rac-physical-output #rac-detail h2{font-size:32px}
+#rac-directory.rac-physical-output #rac-detail p{font-size:20px}
+#rac-directory.rac-physical-output footer{font-size:15px;padding:9px 18px}
+#rai-inspector.rac-physical-output{padding:20px;font-size:20px}`;
+ document.head.append(style);
+ const corners=[new THREE.Vector3(-.5,.5,0),new THREE.Vector3(.5,.5,0),new THREE.Vector3(.5,-.5,0),new THREE.Vector3(-.5,-.5,0)],points=corners.map(()=>new THREE.Vector3());
+ let raf=0,disposed=false,last="",lastOutput=null;
+ function restoreEvidence(){if(inspector?.classList.contains("rac-physical-output")){inspector.classList.remove("rac-physical-output");inspector.style.removeProperty("transform");imarker.after(inspector);}}
+ function tick(){
+  if(disposed)return;if(A.world!==w||!C.root.parent){dispose();return;}
+  const seat=C.state.seat,evidence=seat&&panel.hidden&&inspector&&!inspector.hidden;
+  if(evidence){if(inspector.parentNode!==host)host.append(inspector);inspector.classList.add("rac-physical-output");}else restoreEvidence();
+  const output=seat&&!panel.hidden?panel:evidence?inspector:null;host.style.visibility=output?"visible":"hidden";
+  if(output){
+   const mesh=screens.find(s=>s.station===seat).mesh;mesh.updateWorldMatrix(true,false);w.camera.updateMatrixWorld();
+   const rect=w.renderer.domElement.getBoundingClientRect();points.forEach((p,i)=>p.copy(corners[i]).applyMatrix4(mesh.matrixWorld).project(w.camera));
+   if(rect.width>0&&rect.height>0&&points.every(p=>p.z>=-1&&p.z<=1)){
+    const q=points.map(p=>({x:rect.left+(p.x+1)*rect.width/2,y:rect.top+(1-p.y)*rect.height/2}));
+    const [p0,p1,p2,p3]=q,dx1=p1.x-p2.x,dx2=p3.x-p2.x,dx3=p0.x-p1.x+p2.x-p3.x,dy1=p1.y-p2.y,dy2=p3.y-p2.y,dy3=p0.y-p1.y+p2.y-p3.y,den=dx1*dy2-dx2*dy1;
+    if(Math.abs(den)>.00001){
+     const g=(dx3*dy2-dx2*dy3)/den,h=(dx1*dy3-dx3*dy1)/den,a=p1.x-p0.x+g*p1.x,b=p3.x-p0.x+h*p3.x,d=p1.y-p0.y+g*p1.y,e=p3.y-p0.y+h*p3.y;
+     const matrix=`matrix3d(${a/1000},${d/1000},0,${g/1000},${b/605},${e/605},0,${h/605},0,0,1,0,${p0.x},${p0.y},0,1)`;
+     if(matrix!==last||output!==lastOutput){output.style.setProperty("transform",matrix,"important");last=matrix;lastOutput=output;}
+    }else host.style.visibility="hidden";
+   }else host.style.visibility="hidden";
+  }
+  raf=requestAnimationFrame(tick);
+ }
+ const previousDispose=C.dispose;
+ function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);restoreEvidence();panel.classList.remove("rac-physical-output");panel.style.removeProperty("transform");marker.after(panel);marker.remove();imarker?.remove();host.remove();style.remove();if(C.dispose===wrappedDispose)C.dispose=previousDispose;if(window.RareAtlasMonitorOutput?.host===host)window.RareAtlasMonitorOutput=null;}
+ function wrappedDispose(){dispose();return previousDispose.call(C);}
+ C.dispose=wrappedDispose;window.RareAtlasMonitorOutput={host,screens,dispose};tick();
+ return "Computer directory and seated evidence use the physical monitor surface. Existing controls and research are preserved.";
+}
+function installAtlasPrint(){
+ const ui=document.getElementById("rai-ui");
+ if(!ui)throw new Error("Atlas controls were not found.");
+ window.RareAtlasPrint?.dispose();
+ const style=document.createElement("style");
+ style.textContent=`
+#rap-tools{position:fixed;right:18px;bottom:76px;width:min(370px,calc(100vw - 36px));box-sizing:border-box;background:#0b1e2c;color:#dfebf2;border:1px solid #789ba7;border-radius:12px;padding:16px;z-index:120;pointer-events:auto;box-shadow:0 12px 40px #0008}
+#rap-tools[hidden]{display:none!important}
+#rap-tools h2{font:22px Georgia;margin:0 0 12px}
+#rap-tools select{box-sizing:border-box;width:100%;padding:9px;background:#142f40;color:#dfebf2;border:1px solid #789ba7;border-radius:6px}
+#rap-tools .rap-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+#rap-tools button{padding:8px 10px}
+#rap-tools p{font:12px/1.5 system-ui;color:#b9ced9;margin-bottom:0}
+#rap-print{display:none}
+@media print{
+@page{size:A4;margin:18mm}
+html,body{height:auto!important;overflow:visible!important;background:white!important;color:black!important}
+body>*:not(#rap-print){display:none!important}
+#rap-print{display:block!important;font:11pt/1.5 system-ui;color:black;background:white}
+#rap-print h1{font-size:20pt}
+#rap-print pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+}`;
+ document.head.append(style);
+ const button=document.createElement("button");
+ button.id="rap-open";button.textContent="Print / PDF";button.title="Export an evidence record or desk document";
+ const bar=ui.querySelector(".ra-bar");
+ (bar?.querySelector(".ra-group:last-child")||bar||ui).append(button);
+ const panel=document.createElement("section");
+ panel.id="rap-tools";panel.hidden=true;panel.setAttribute("aria-label","Document PDF export");
+ panel.innerHTML=`<h2>Print / PDF</h2><label for="rap-choice">Document</label><select id="rap-choice"></select><div class="rap-actions"><button id="rap-download">Download PDF</button><button id="rap-paper">Print</button><button id="rap-share">Share / Email / WhatsApp</button><button id="rap-close">Close</button></div><p id="rap-status" role="status" aria-live="polite"></p><p>Sharing depends on your browser and device. If unavailable, download the PDF and attach it in email or WhatsApp. Nothing is sent automatically.</p>`;
+ ui.append(panel);
+ const get=id=>panel.querySelector("#"+id);
+ const warning="Atlas includes synthetic demonstration records. User-supplied material is not independently verified. This export is not clinical guidance.";
+ let documents=[],selected=null,file=null,sequence=0,disposed=false;
+ const cache=new Map(),urls=new Set();
+ function textOf(el){
+  const copy=el.cloneNode(true);
+  copy.querySelectorAll("button,input,select,script,style,[aria-hidden='true']").forEach(n=>n.remove());
+  copy.querySelectorAll("p,div,h1,h2,h3,h4,section,article,header,footer,li,blockquote,pre,tr,br").forEach(n=>n.append("\n"));
+  return copy.textContent.replace(/\n[ \t]+/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
+ }
+ function stringify(value){
+  const seen=new WeakSet();
+  return JSON.stringify(value,(key,v)=>{
+   if(typeof v==="bigint")return String(v);
+   if(typeof v==="function")return undefined;
+   if(v&&typeof v==="object"){if(seen.has(v))return "[Repeated reference]";seen.add(v);}
+   return v;
+  },2)||"";
+ }
+ function record(d){return {title:d.title||d.label||d.kind||"Research document",text:stringify(d)};}
+ function snapshot(){
+  const objects=window.RareAtlasInteractive?.packet?.researchObjects||[];
+  const inspector=document.getElementById("rai-inspector");
+  const directory=document.getElementById("rac-directory");
+  const detail=document.getElementById("rac-detail");
+  const active=directory&&!directory.hidden?detail:inspector&&!inspector.hidden?inspector:null;
+  documents=[];
+  if(active){
+   const text=textOf(active);
+   if(text)documents.push({title:active.querySelector("h1,h2,h3")?.textContent.trim()||"Current evidence",text});
+  }
+  const chosen=objects.find(d=>d.id===window.app?.lastSelected);
+  if(!documents.length&&chosen)documents.push(record(chosen));
+  for(const d of objects)documents.push(record(d));
+  documents.push({title:"All desk research",text:objects.length?objects.map(d=>record(d).title+"\n"+stringify(d)).join("\n\n"):"No desk research objects are currently retained."});
+  const select=get("rap-choice");select.replaceChildren();
+  documents.forEach((d,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=d.title;select.append(o);});
+ }
+ async function makePDF(doc){
+  const key=doc.title+"\n"+doc.text;
+  if(cache.has(key))return cache.get(key);
+  const c=document.createElement("canvas");c.width=1240;c.height=1754;
+  const ctx=c.getContext("2d");ctx.font="24px system-ui";
+  const lines=[];
+  for(const paragraph of (doc.title+"\n\n"+doc.text+"\n\n"+warning).replace(/\r\n?/g,"\n").split("\n")){
+   if(!paragraph.trim()){lines.push("");continue;}
+   let line="";
+   for(const word of paragraph.split(/\s+/)){
+    const next=line?line+" "+word:word;
+    if(ctx.measureText(next).width<=1092){line=next;continue;}
+    if(line){lines.push(line);line="";}
+    for(const character of word){
+     if(ctx.measureText(line+character).width>1092){lines.push(line);line="";}
+     line+=character;
+    }
+   }
+   lines.push(line);
+  }
+  const images=[],count=Math.max(1,Math.ceil(lines.length/42)),stamp=new Date().toISOString();
+  for(let p=0;p<count;p++){
+   ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+   ctx.fillStyle="#193c4b";ctx.font="bold 26px system-ui";ctx.fillText("Rare Atlas | Research document",74,50);
+   ctx.strokeStyle="#a8bbc2";ctx.beginPath();ctx.moveTo(74,70);ctx.lineTo(1166,70);ctx.stroke();
+   ctx.fillStyle="#172c37";ctx.font="24px system-ui";
+   lines.slice(p*42,(p+1)*42).forEach((line,i)=>ctx.fillText(line,74,112+i*36));
+   ctx.font="18px system-ui";ctx.fillStyle="#526773";
+   ctx.fillText("Exported "+stamp+"   |   Page "+(p+1)+" of "+count,74,1686);
+   const raw=atob(c.toDataURL("image/jpeg",.93).split(",")[1]);
+   images.push(Uint8Array.from(raw,ch=>ch.charCodeAt(0)));
+   await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  c.width=c.height=1;
+  const encoder=new TextEncoder(),chunks=[],offsets=[0];let length=0;
+  const push=value=>{const bytes=typeof value==="string"?encoder.encode(value):value;chunks.push(bytes);length+=bytes.length;};
+  const object=(id,body)=>{offsets[id]=length;push(id+" 0 obj\n");push(body);push("\nendobj\n");};
+  const stream=(id,dict,bytes)=>{offsets[id]=length;push(id+" 0 obj\n<< "+dict+" /Length "+bytes.length+" >>\nstream\n");push(bytes);push("\nendstream\nendobj\n");};
+  push("%PDF-1.4\n");
+  object(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  object(2,"<< /Type /Pages /Count "+count+" /Kids ["+images.map((_,i)=>(5+i*3)+" 0 R").join(" ")+"] >>");
+  images.forEach((image,i)=>{
+   const id=3+i*3;
+   stream(id,"/Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode",image);
+   stream(id+1,"",encoder.encode("q\n595 0 0 842 0 0 cm\n/Im0 Do\nQ"));
+   object(id+2,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 "+id+" 0 R >> >> /Contents "+(id+1)+" 0 R >>");
+  });
+  const total=3+count*3,xref=length;
+  push("xref\n0 "+total+"\n0000000000 65535 f \n");
+  for(let i=1;i<total;i++)push(String(offsets[i]).padStart(10,"0")+" 00000 n \n");
+  push("trailer\n<< /Size "+total+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF\n");
+  const filename=(doc.title.replace(/[^\w -]/g,"").trim().slice(0,70)||"Rare Atlas document")+".pdf";
+  const result=new File(chunks,filename,{type:"application/pdf"});
+  cache.set(key,result);if(cache.size>3)cache.delete(cache.keys().next().value);
+  return result;
+ }
+ function message(text){get("rap-status").textContent=text;}
+ async function prepare(doc){
+  const token=++sequence;selected=doc;file=null;
+  get("rap-download").disabled=get("rap-share").disabled=true;
+  message("Preparing PDF locally…");
+  try{
+   const result=await makePDF(doc);
+   if(disposed||token!==sequence)return;
+   file=result;get("rap-download").disabled=get("rap-share").disabled=false;
+   message("PDF ready. Full document text, source details and evidence warnings are included.");
+  }catch(error){if(token===sequence)message("PDF could not be prepared: "+error.message);}
+ }
+ function open(){
+  snapshot();panel.hidden=false;prepare(documents[0]);
+ }
+ function download(){
+  if(!file)return;
+  const url=URL.createObjectURL(file);urls.add(url);
+  const link=document.createElement("a");link.href=url;link.download=file.name;ui.append(link);link.click();link.remove();
+  setTimeout(()=>{URL.revokeObjectURL(url);urls.delete(url);},60000);
+  message("PDF download requested. You can attach the saved file in email or WhatsApp.");
+ }
+ async function share(){
+  if(!file)return;
+  try{
+   if(!navigator.share||(navigator.canShare&&!navigator.canShare({files:[file]}))){
+    message("File sharing is unavailable here. Download the PDF, then attach it in email or WhatsApp.");return;
+   }
+   await navigator.share({files:[file],title:selected.title});
+   message("Share sheet completed.");
+  }catch(error){
+   message(error.name==="AbortError"?"Sharing cancelled. Your PDF remains ready.":"Sharing was blocked. Download the PDF and attach it in your preferred app.");
+  }
+ }
+ function print(){
+  if(!selected)return;
+  document.getElementById("rap-print")?.remove();
+  const root=document.createElement("article");root.id="rap-print";
+  const h=document.createElement("h1");h.textContent=selected.title;
+  const body=document.createElement("pre");body.textContent=selected.text;
+  const note=document.createElement("p");note.textContent=warning;
+  root.append(h,body,note);document.body.append(root);
+  window.addEventListener("afterprint",()=>root.remove(),{once:true});
+  try{window.print();message("Print requested. If the sandbox blocks printing, use Download PDF.");}
+  catch(error){message("Printing is blocked here. Use Download PDF instead.");}
+ }
+ button.onclick=open;get("rap-close").onclick=()=>{panel.hidden=true;};
+ get("rap-choice").onchange=()=>prepare(documents[Number(get("rap-choice").value)]);
+ get("rap-download").onclick=download;get("rap-paper").onclick=print;get("rap-share").onclick=share;
+ function dispose(){
+  disposed=true;sequence++;button.remove();panel.remove();style.remove();
+  document.getElementById("rap-print")?.remove();urls.forEach(url=>URL.revokeObjectURL(url));cache.clear();
+ }
+ window.RareAtlasPrint={open,download,share,print,makePDF,exportDocument(doc){
+  const entry=doc instanceof Element?{title:doc.querySelector("h1,h2,h3")?.textContent||"Document",text:textOf(doc)}:typeof doc==="string"?{title:"Document",text:doc}:{title:String(doc.title||"Document"),text:String(doc.text||doc.content||"")};
+  documents=[entry];get("rap-choice").replaceChildren(new Option(entry.title,"0"));panel.hidden=false;return prepare(entry);
+ },dispose};
+ return "Added local PDF download, document printing and native file-sharing controls; the running scene and research were preserved.";
+}
+
+// The Mondo floor: a lower level of the Rare Atlas world that lays out every
+// rare disease in the Mondo Disease Ontology as a mosaic of tiles. Each tile
+// is an image drawn, in a shader, from that disease's own metadata: gallery
+// colour from its Mondo body-system category, glyph shape from its kind,
+// glyph size from how many subtypes it has, source dots for GARD, NORD,
+// Orphanet and OMIM, bars for synonyms and cross-references, and a line when
+// the record carries a definition. Walking close turns the nearest tiles
+// into full cards with the disease name.
+//
+// This is a classic script, not a module, so that the LiveLoop wrapper can
+// inline it next to the other atlas extensions. It expects the running atlas:
+// window.app (the world), window.RareAtlasInteractive (the controls) and the
+// #rai-ui overlay. Data comes from loader/mondo/build.js, in order of
+// preference: window.MONDO_FLOOR_URL, the LiveLoop library asset
+// "mondo-floor", the copy committed to this repository, then the small
+// sample embedded by the wrapper (window.MONDO_FLOOR_SAMPLE).
+
+function installMondoFloor(){
+ const A=window.app,R=window.RareAtlasInteractive;
+ if(!A?.world||!R)throw new Error("The existing atlas must be running.");
+ window.RareAtlasMondoFloor?.dispose();
+ const {THREE}=window.AskSary3D,w=A.world,canvas=w.renderer.domElement,ui=document.getElementById("rai-ui");
+ if(!ui)throw new Error("Existing atlas controls were not found.");
+ const resources=[],off=[],own=x=>(resources.push(x),x);
+ const on=(el,k,fn,opt)=>{el.addEventListener(k,fn,opt);off.push(()=>el.removeEventListener(k,fn,opt));};
+ const get=id=>document.getElementById(id);
+ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),ease=t=>t*t*(3-2*t);
+ const fmt=n=>Number(n).toLocaleString("en");
+ if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h){this.rect(x,y,w,h);};
+
+ // Geometry of the level. The library's own walk controller stops at a 21.3 m
+ // radius and keeps the eye at 1.8 m, so the floor lives far below and this
+ // extension drives the camera while the visitor is down there.
+ const LEVEL_Y=-120,EYE=1.7,HUB_R=7,PITCH=.6,TILE=.52,RING_AISLE=10,AISLE=.45,STAIR={x:-16,z:11};let FLOOR_R=58;
+ const CATEGORY_COLOURS=["#7aa6ff","#8fd3c3","#c7b58a","#e8a65d","#f0d26a","#9bd47a","#e07a7a","#f08fb0","#8ecae6","#d9a66b","#a6c48a","#d58ad5","#e3b58a","#8fb8ff","#7fd5e0","#b8c7d9","#c9a0dc","#f2a5a5","#a0e0c0","#cf9f6a","#79c7a3","#d6b0ff","#e0c080","#8b97a8"];
+ const SOURCE_COLOURS={GARD:"#7fd0ff",NORD:"#ffd27f",Orphanet:"#9cff9c",OMIM:"#ff9fb5"};
+ const DATA_URLS=[window.MONDO_FLOOR_URL,"asksary-asset://mondo-floor",
+  "https://cdn.jsdelivr.net/gh/sidevworks/rare-atlas@main/public/mondo/mondo-floor.compact.json",
+  "https://cdn.jsdelivr.net/gh/sidevworks/rare-atlas@ccr-e116c7e0-vzdcii/public/mondo/mondo-floor.compact.json",
+  "https://raw.githubusercontent.com/sidevworks/rare-atlas/ccr-e116c7e0-vzdcii/public/mondo/mondo-floor.compact.json"].filter(Boolean);
+
+ const state={level:"library",disposed:false,raf:0,last:0,near:false,keys:new Set(),fly:null,overview:false,drag:null,look:{theta:0,phi:1.5},
+  data:null,source:"",hover:-1,selected:-1,matches:[],filterBits:0,focusCat:-1,beforeInspector:true,fogDensity:null,notice:""};
+
+ // ---------------------------------------------------------------- scene
+ const root=new THREE.Group();root.name="Mondo floor — level −1";w.scene.add(root);
+ const ground=new THREE.Group();ground.name="Mondo floor — stairwell";w.scene.add(ground);
+ const box=own(new THREE.BoxGeometry(1,1,1)),plane=own(new THREE.PlaneGeometry(1,1));
+ const mat=(color,extra={})=>own(new THREE.MeshStandardMaterial({color,roughness:.7,metalness:.15,...extra}));
+ const stone=mat("#2a3c48"),metal=mat("#7a8a90",{metalness:.75,roughness:.35}),dark=mat("#0a141c"),glow=own(new THREE.MeshBasicMaterial({color:"#9fd2df"}));
+ const cube=(parent,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(box,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;};
+ const textPlane=(parent,draw,width,height,x,y,z,ry=0,double=false)=>{
+  const c=document.createElement("canvas");c.width=Math.round(width*180);c.height=Math.round(height*180);
+  draw(c.getContext("2d"),c.width,c.height);
+  const tx=own(new THREE.CanvasTexture(c));tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;
+  const m=own(new THREE.MeshBasicMaterial({map:tx,toneMapped:false,transparent:true,side:double?THREE.DoubleSide:THREE.FrontSide}));
+  const o=new THREE.Mesh(plane,m);o.position.set(x,y,z);o.scale.set(width,height,1);o.rotation.y=ry;parent.add(o);return o;
+ };
+
+ // Stairwell on the library floor, mirroring the computer section.
+ (()=>{
+  const g=new THREE.Group();g.position.set(STAIR.x,0,STAIR.z);ground.add(g);
+  cube(g,dark,0,-1.6,0,2.6,3.2,3.4);                      // the shaft
+  for(let i=0;i<7;i++)cube(g,stone,0,-.12-i*.24,-1.35+i*.42,2.4,.12,.42); // steps going down, entered from the library side (−z)
+  cube(g,stone,0,.06,-2.1,2.6,.12,.9);                    // threshold on the entrance side
+  for(const x of[-1.3,1.3]){cube(g,metal,x,.5,-1.7,.06,1,.06);cube(g,metal,x,.5,1.7,.06,1,.06);cube(g,metal,x,.98,0,.05,.05,3.4);}
+  cube(g,metal,0,.98,1.7,2.6,.05,.05);
+  const light=new THREE.PointLight("#9fd2df",2,6,2);light.position.set(0,.6,0);g.add(light);
+  cube(g,glow,0,-1.55,-1.6,2.2,.03,.03);
+  cube(g,metal,-1.9,1.25,-1.9,.05,2.5,.05);
+  textPlane(g,(ctx,W,H)=>{ctx.fillStyle="#102531";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);ctx.fillStyle="#d9e9ef";ctx.font="bold 56px Georgia";ctx.fillText("MONDO FLOOR  ↓",28,78);ctx.fillStyle="#a9c4d0";ctx.font="28px sans-serif";ctx.fillText("Level −1 · every rare disease in the Mondo ontology,",28,128);ctx.fillText("laid out as images by body system. Walk down or press E.",28,166);},3.4,1.1,-.2,2.1,-1.92,Math.PI);
+ })();
+
+ // Lower level: floor disc, ceiling to hide the library above, hub column.
+ const floorMat=own(new THREE.ShaderMaterial({uniforms:{uR:{value:FLOOR_R},uHub:{value:HUB_R},uPitch:{value:PITCH*RING_AISLE}},
+  vertexShader:`varying vec2 vP;void main(){vP=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform float uR,uHub,uPitch;varying vec2 vP;void main(){float r=length(vP)*uR;vec3 c=vec3(.028,.045,.07);float ring=smoothstep(.06,.0,abs(fract((r-uHub)/uPitch+.5)-.5)*uPitch-.03)*step(uHub,r);c+=vec3(.08,.14,.18)*ring*.6;float hub=smoothstep(.08,0.,abs(r-uHub+.3)-.04);c+=vec3(.3,.5,.6)*hub;c*=1.-smoothstep(uR-6.,uR,r);gl_FragColor=vec4(c,1.);}`}));
+ const floor=new THREE.Mesh(own(new THREE.CircleGeometry(1,180)),floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=LEVEL_Y;floor.scale.setScalar(FLOOR_R);root.add(floor);
+ const resizeFloor=r=>{FLOOR_R=r;floor.scale.setScalar(r);floorMat.uniforms.uR.value=r;ceiling.scale.setScalar(r+40);};
+ const ceiling=new THREE.Mesh(own(new THREE.CircleGeometry(1,64)),own(new THREE.MeshBasicMaterial({color:"#04080d",side:THREE.BackSide})));ceiling.rotation.x=-Math.PI/2;ceiling.position.y=LEVEL_Y+95;ceiling.scale.setScalar(FLOOR_R+40);root.add(ceiling);
+ const hub=new THREE.Group();hub.position.y=LEVEL_Y;root.add(hub);
+ cube(hub,stone,0,.08,0,2.6,.16,2.6);cube(hub,dark,0,2.2,0,1.1,4.2,1.1);cube(hub,metal,0,4.35,0,1.3,.08,1.3);
+ for(const a of[0,Math.PI/2,Math.PI,-Math.PI/2]){const l=new THREE.PointLight("#bfe3ee",14,26,1.6);l.position.set(Math.sin(a)*3,3.4,Math.cos(a)*3);hub.add(l);}
+ const legendDraw=(ctx,W,H)=>{
+  ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);
+  ctx.fillStyle="#d9e9ef";ctx.font="bold 44px Georgia";ctx.fillText("MONDO FLOOR",28,64);ctx.fillStyle="#a9c4d0";ctx.font="22px sans-serif";
+  const lines=["Each tile is one disease, drawn from its Mondo record.","Colour: gallery (Mondo body-system category).","Glyph: circle = disease · hexagon = syndromic · square = group.","Glyph size: how many subtypes sit beneath it.","Dots: GARD · NORD · Orphanet · OMIM list it.","Bars: synonyms (left) · cross-references (right).","Line under glyph: the record has a definition.","Walk close to read names. Press O for the overview."];
+  lines.forEach((t,i)=>ctx.fillText(t,28,112+i*36));
+  ctx.fillStyle="#d8c699";ctx.font="18px sans-serif";ctx.fillText("Mondo Disease Ontology (CC BY 4.0) · ontology terms, not patient data.",28,H-26);
+ };
+ for(const a of[0,Math.PI])textPlane(hub,legendDraw,2.8,2.2,Math.sin(a)*.58,2.3,Math.cos(a)*.58,a);
+ for(const a of[Math.PI/2,-Math.PI/2])textPlane(hub,(ctx,W,H)=>{ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);ctx.fillStyle="#d9e9ef";ctx.font="bold 44px Georgia";ctx.fillText("RARE ATLAS",28,64);ctx.fillStyle="#a9c4d0";ctx.font="24px sans-serif";ctx.fillText("Level −1 · the Mondo floor",28,110);ctx.fillStyle="#9fbdcd";ctx.font="20px sans-serif";["Galleries run clockwise from the landing.","Aisles every ten rings; names are alphabetical","along each ring, reading outward.","","Esc or the Library button returns upstairs."].forEach((t,i)=>ctx.fillText(t,28,160+i*32));},2.8,2.2,Math.sin(a)*.58,2.3,Math.cos(a)*.58,a);
+ const stairsDown=new THREE.Group();stairsDown.position.set(0,0,HUB_R-1.2);hub.add(stairsDown);
+ cube(stairsDown,glow,0,.02,0,1.8,.02,.3);
+
+ // ---------------------------------------------------------------- tiles
+ const tileMat=own(new THREE.ShaderMaterial({transparent:true,depthWrite:true,side:THREE.DoubleSide,uniforms:{uTime:{value:0},uTile:{value:TILE},uCat:{value:CATEGORY_COLOURS.map(c=>new THREE.Color(c))}},
+  vertexShader:`attribute vec3 aOffset;attribute float aAngle;attribute vec4 aMeta;attribute vec4 aCount;attribute float aState;attribute float aAlpha;
+uniform float uTime,uTile;varying vec2 vUv;varying vec4 vMeta,vCount;varying float vState,vAlpha;
+void main(){vUv=uv;vMeta=aMeta;vCount=aCount;vState=aState;vAlpha=aAlpha;float c=cos(aAngle),s=sin(aAngle);vec2 p=position.xy*uTile;
+vec3 pos=vec3(p.x*c+p.y*s,0.,-p.x*s+p.y*c);float lift=aState>.5?.14+.05*sin(uTime*3.+aOffset.x):0.;pos+=aOffset+vec3(0.,.012+lift,0.);
+gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.);}`,
+  fragmentShader:`uniform vec3 uCat[24];uniform float uTime;varying vec2 vUv;varying vec4 vMeta,vCount;varying float vState,vAlpha;
+float sdBox(vec2 p,vec2 b){vec2 d=abs(p)-b;return length(max(d,0.))+min(max(d.x,d.y),0.);}
+void main(){vec2 p=vUv*2.-1.;int cat=int(vMeta.x+.5);vec3 base=uCat[0];for(int i=0;i<24;i++)if(i==cat)base=uCat[i];
+float box=sdBox(p,vec2(.93))-.07;if(box>0.)discard;float seed=vMeta.w;vec3 col=base*(.42+.22*seed);
+col=mix(col,base*.78,smoothstep(0.,-.2,sdBox(p,vec2(.74))-.06)*.5);
+float kids=vCount.z;float gr=.2+.11*kids;vec2 g=p-vec2(0.,.08);int shape=int(vMeta.z+.5);float d;
+if(shape==0)d=length(g)-gr;else if(shape==1){vec2 q=abs(g);d=max(q.x*.866+q.y*.5,q.y)-gr;}else d=sdBox(g,vec2(gr*.9));
+float ring=smoothstep(.035,0.,abs(d)-.03);float fill=smoothstep(.02,-.02,d+.09);vec3 ink=vec3(.94,.97,1.);
+col=mix(col,base*1.7,fill*.55);col=mix(col,ink,ring*.9);
+float flags=vMeta.y;
+if(mod(floor(flags/16.),2.)>.5){float line=smoothstep(.03,0.,abs(p.y+.5)-.025)*step(abs(p.x),.5);col=mix(col,ink,line*.75);}
+vec3 dots[4];dots[0]=vec3(.5,.82,1.);dots[1]=vec3(1.,.82,.5);dots[2]=vec3(.61,1.,.61);dots[3]=vec3(1.,.62,.71);
+for(int i=0;i<4;i++){float bit=mod(floor(flags/pow(2.,float(i))),2.);vec2 c=vec2(-.6+.4*float(i),.76);float on=smoothstep(.03,0.,length(p-c)-.1);col=mix(col,bit>.5?dots[i]:base*.25,on);}
+for(int i=0;i<3;i++){float fi=float(i);float lit=step(fi+.5,vCount.x);float seg=smoothstep(.02,0.,sdBox(p-vec2(-.74+.22*fi,-.8),vec2(.085,.055)));col=mix(col,lit>.5?ink*.9:base*.3,seg);
+lit=step(fi+.5,vCount.y);seg=smoothstep(.02,0.,sdBox(p-vec2(.74-.22*fi,-.8),vec2(.085,.055)));col=mix(col,lit>.5?vec3(1.,.9,.6):base*.3,seg);}
+float edge=smoothstep(-.09,-.02,box);
+if(vState>2.5)col=mix(col,vec3(1.,.85,.4),edge*(.7+.3*sin(uTime*4.)));else if(vState>1.5)col=mix(col,vec3(1.),edge);else if(vState>.5)col=mix(col*1.25,vec3(.8,.95,1.),edge*.8);
+gl_FragColor=vec4(col,vAlpha);}`}));
+ let tiles=null,layout=null,grid=null;
+ const galleryLabels=new THREE.Group();root.add(galleryLabels);
+
+ function decode(data){
+  const bytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+  const u32=s=>new Uint32Array(bytes(s).buffer),u16=s=>new Uint16Array(bytes(s).buffer);
+  const names=data.names.split("\n");
+  return{n:data.n,names,ids:u32(data.ids),cat:bytes(data.cat),cats:u32(data.cats),flags:bytes(data.flags),syn:bytes(data.syn),xref:bytes(data.xref),kids:u16(data.kids),depth:bytes(data.depth),categories:data.categories,builtAt:data.builtAt,source:data.source,definitions:data.definitions||null};
+ }
+ function fromRecords(full){
+  const records=full.records,n=records.length,categories=full.categories.map(c=>({...c,count:0}));
+  const d={n,names:[],ids:new Uint32Array(n),cat:new Uint8Array(n),cats:new Uint32Array(n),flags:new Uint8Array(n),syn:new Uint8Array(n),xref:new Uint8Array(n),kids:new Uint16Array(n),depth:new Uint8Array(n),categories,definitions:[],source:full.source};
+  records.forEach((r,i)=>{d.names.push(r.name);d.ids[i]=Number(String(r.id).slice(6));d.cat[i]=r.category;categories[r.category].count++;d.cats[i]=(r.categories||[]).reduce((m,c)=>m|(1<<c),0);d.flags[i]=r.flags;d.syn[i]=Math.min(255,(r.synonyms||[]).length);d.xref[i]=Math.min(255,Object.values(r.xrefs||{}).reduce((s,v)=>s+v.length,0));d.kids[i]=Math.min(65535,r.descendants||0);d.depth[i]=r.depth||0;d.definitions.push(r.definition||"");});
+  return d;
+ }
+
+ // Rings of tiles per gallery sector, alphabetical along each ring.
+ function buildLayout(d){
+  const C=d.categories.length,counts=new Array(C).fill(0);for(let i=0;i<d.n;i++)counts[d.cat[i]]++;
+  const order=[];for(let i=0;i<d.n;i++)order.push(i);order.sort((a,b)=>d.cat[a]-d.cat[b]||d.names[a].localeCompare(d.names[b],"en"));
+  const total=counts.reduce((s,c)=>s+c,0),pos=new Float32Array(d.n*3),ang=new Float32Array(d.n),sectors=[];
+  let a0=Math.PI*.5,k=0;
+  for(let c=0;c<C;c++){
+   const span=Math.PI*2*counts[c]/total;if(!counts[c]){sectors.push({c,a0,a1:a0,rOut:HUB_R});continue;}
+   const members=order.slice(k,k+counts[c]);k+=counts[c];
+   let placed=0,ring=0,r=HUB_R+PITCH*.5;
+   while(placed<members.length){
+    if(ring&&ring%RING_AISLE===0){r+=PITCH*1.3;}
+    const usable=span-2*AISLE/r;const slots=Math.max(1,Math.floor(usable*r/PITCH));
+    const step=usable/slots,start=a0+AISLE/r+step*.5;
+    for(let s=0;s<slots&&placed<members.length;s++,placed++){
+     const i=members[placed],a=start+s*step;
+     pos[i*3]=Math.sin(a)*r;pos[i*3+1]=LEVEL_Y;pos[i*3+2]=Math.cos(a)*r;ang[i]=a;
+    }
+    ring++;r+=PITCH;
+   }
+   sectors.push({c,a0,a1:a0+span,rOut:r});a0+=span;
+  }
+  return{pos,ang,sectors,counts};
+ }
+
+ function buildTiles(d){
+  disposeTiles();
+  layout=buildLayout(d);resizeFloor(Math.max(...layout.sectors.map(s=>s.rOut))+6);
+  const geo=own(new THREE.InstancedBufferGeometry());const base=own(new THREE.PlaneGeometry(1,1));
+  geo.index=base.index;geo.attributes.position=base.attributes.position;geo.attributes.uv=base.attributes.uv;geo.instanceCount=d.n;
+  const meta=new Float32Array(d.n*4),count=new Float32Array(d.n*4),st=new Float32Array(d.n),al=new Float32Array(d.n).fill(1);
+  for(let i=0;i<d.n;i++){
+   const f=d.flags[i];let h=2166136261;const name=d.names[i];for(let j=0;j<name.length;j++){h^=name.charCodeAt(j);h=Math.imul(h,16777619);}
+   meta[i*4]=d.cat[i];meta[i*4+1]=f&255;meta[i*4+2]=(f&128)?2:(f&32)?1:0;meta[i*4+3]=((h>>>0)%1000)/1000;
+   const s=d.syn[i],x=d.xref[i],kd=d.kids[i];
+   count[i*4]=s===0?0:s<=2?1:s<=6?2:3;count[i*4+1]=x===0?0:x<=3?1:x<=8?2:3;count[i*4+2]=kd===0?0:kd<=3?1:kd<=15?2:3;count[i*4+3]=d.depth[i];
+  }
+  geo.setAttribute("aOffset",new THREE.InstancedBufferAttribute(layout.pos,3));
+  geo.setAttribute("aAngle",new THREE.InstancedBufferAttribute(layout.ang,1));
+  geo.setAttribute("aMeta",new THREE.InstancedBufferAttribute(meta,4));
+  geo.setAttribute("aCount",new THREE.InstancedBufferAttribute(count,4));
+  const stateAttr=new THREE.InstancedBufferAttribute(st,1),alphaAttr=new THREE.InstancedBufferAttribute(al,1);stateAttr.setUsage(THREE.DynamicDrawUsage);alphaAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute("aState",stateAttr);geo.setAttribute("aAlpha",alphaAttr);
+  tiles=new THREE.Mesh(geo,tileMat);tiles.frustumCulled=false;tiles.name="Mondo tiles";root.add(tiles);
+  grid=new Map();const cell=2;
+  for(let i=0;i<d.n;i++){const key=Math.floor(layout.pos[i*3]/cell)+","+Math.floor(layout.pos[i*3+2]/cell);let b=grid.get(key);if(!b){b=[];grid.set(key,b);}b.push(i);}
+  grid.cell=cell;
+  // Gallery signs: a post at the inner edge and a floating label over the sector.
+  galleryLabels.clear();
+  for(const s of layout.sectors){
+   if(s.a1===s.a0)continue;const mid=(s.a0+s.a1)/2,cat=d.categories[s.c],colour=CATEGORY_COLOURS[s.c%24];
+   const r0=HUB_R-.55;const post=new THREE.Group();post.position.set(Math.sin(mid)*r0,LEVEL_Y,Math.cos(mid)*r0);post.rotation.y=mid+Math.PI;galleryLabels.add(post);
+   cube(post,metal,0,1.1,0,.05,2.2,.05);
+   textPlane(post,(ctx,W,H)=>{ctx.fillStyle="#0b1e2c";ctx.fillRect(0,0,W,H);ctx.fillStyle=colour;ctx.fillRect(0,0,14,H);ctx.fillStyle="#e4f0f5";ctx.font="bold 40px Georgia";ctx.fillText(cat.label.toUpperCase(),30,58);ctx.fillStyle="#a9c4d0";ctx.font="24px sans-serif";ctx.fillText(fmt(layout.counts[s.c])+" diseases · "+(cat.mondoLabel||""),30,98);},2.4,.7,0,2.0,0,0,true);
+   const rm=HUB_R+(s.rOut-HUB_R)*.72,h=6.5+Math.min(5,(s.rOut-HUB_R)*.06),lw=Math.max(3,Math.min(10,3+(s.rOut-HUB_R)*.2));
+   textPlane(galleryLabels,(ctx,W,H)=>{ctx.clearRect(0,0,W,H);ctx.fillStyle="rgba(8,20,32,.78)";ctx.beginPath();ctx.roundRect(0,0,W,H,40);ctx.fill();ctx.fillStyle=colour;ctx.fillRect(0,H-16,W,16);ctx.fillStyle="#eef6fa";ctx.font="bold "+Math.round(W*.075)+"px Georgia";ctx.textAlign="center";ctx.fillText(cat.label,W/2,H*.5);ctx.fillStyle="#b9d3e0";ctx.font=Math.round(W*.04)+"px sans-serif";ctx.fillText(fmt(layout.counts[s.c])+" rare diseases",W/2,H*.86);},lw,lw*.3,Math.sin(mid)*rm,LEVEL_Y+h,Math.cos(mid)*rm,0,true).userData.label=true;
+  }
+  stairsDown.position.set(Math.sin(layout.sectors[0].a0-.05)*(HUB_R-1.2),0,Math.cos(layout.sectors[0].a0-.05)*(HUB_R-1.2));
+  refreshFilters();
+ }
+ function disposeTiles(){if(tiles){root.remove(tiles);tiles.geometry.dispose();tiles=null;}for(const o of [...galleryLabels.children]){galleryLabels.remove(o);}grid=null;}
+
+ // Near cards: the closest tiles become readable cards.
+ const CARD_POOL=22,CARD_RADIUS=3.4,cards=[],cardCache=new Map();
+ const cardGeo=own(new THREE.PlaneGeometry(.6,.75));
+ for(let i=0;i<CARD_POOL;i++){const m=own(new THREE.MeshBasicMaterial({transparent:true,toneMapped:false,depthWrite:false}));const c=new THREE.Mesh(cardGeo,m);c.visible=false;c.userData.index=-1;root.add(c);cards.push(c);}
+ function cardTexture(i){
+  let tx=cardCache.get(i);if(tx){cardCache.delete(i);cardCache.set(i,tx);return tx;}
+  const d=state.data,c=document.createElement("canvas");c.width=256;c.height=320;const ctx=c.getContext("2d");
+  const cat=d.categories[d.cat[i]],colour=CATEGORY_COLOURS[d.cat[i]%24],f=d.flags[i];
+  ctx.fillStyle="#0b1e2c";ctx.beginPath();ctx.roundRect(0,0,256,320,16);ctx.fill();ctx.fillStyle=colour;ctx.fillRect(0,0,256,34);
+  ctx.fillStyle="#08131c";ctx.font="bold 15px sans-serif";ctx.fillText(cat.label.toUpperCase(),12,23);
+  ctx.fillStyle="#eef6fa";ctx.font="bold 21px Georgia";const words=d.names[i].split(" ");let line="",y=70;const lines=[];
+  for(const word of words){const t=line?line+" "+word:word;if(ctx.measureText(t).width>232&&line){lines.push(line);line=word;}else line=t;}lines.push(line);
+  for(const l of lines.slice(0,5)){ctx.fillText(lines.length>5&&l===lines[4]?l.slice(0,22)+"…":l,12,y);y+=26;}
+  y=Math.max(y+6,206);ctx.fillStyle="#9fbdcd";ctx.font="14px sans-serif";ctx.fillText("MONDO:"+String(d.ids[i]).padStart(7,"0"),12,y);y+=24;
+  const srcs=[["GARD",1],["NORD",2],["Orphanet",4],["OMIM",8]].filter(([,b])=>f&b);let x=12;
+  for(const[name]of srcs){ctx.fillStyle=SOURCE_COLOURS[name];ctx.beginPath();ctx.roundRect(x,y-14,ctx.measureText(name).width+16,20,6);ctx.fill();ctx.fillStyle="#08131c";ctx.font="bold 12px sans-serif";ctx.fillText(name,x+8,y);x+=ctx.measureText(name).width+24;}
+  if(!srcs.length){ctx.fillStyle="#7c9aaa";ctx.font="12px sans-serif";ctx.fillText("Mondo rare subset only",12,y);}
+  y+=30;ctx.fillStyle="#c2d7e2";ctx.font="13px sans-serif";ctx.fillText(d.syn[i]+" synonyms · "+d.xref[i]+" cross-refs · "+d.kids[i]+" subtypes",12,y);y+=20;
+  ctx.fillStyle=(f&16)?"#b9d3e0":"#7c9aaa";ctx.fillText((f&16)?"Has a definition":"No definition in Mondo",12,y);
+  tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;cardCache.set(i,tx);
+  if(cardCache.size>240){const old=cardCache.keys().next().value;cardCache.get(old).dispose();cardCache.delete(old);}
+  return tx;
+ }
+ function nearIndices(x,z,radius){
+  if(!grid)return[];const out=[],cell=grid.cell,cx=Math.floor(x/cell),cz=Math.floor(z/cell),span=Math.ceil(radius/cell);
+  for(let i=-span;i<=span;i++)for(let j=-span;j<=span;j++){const b=grid.get((cx+i)+","+(cz+j));if(!b)continue;for(const k of b){const dx=layout.pos[k*3]-x,dz=layout.pos[k*3+2]-z,dd=dx*dx+dz*dz;if(dd<radius*radius)out.push([dd,k]);}}
+  out.sort((a,b)=>a[0]-b[0]);return out;
+ }
+ function updateCards(){
+  if(!layout||state.level!=="mondo"||state.overview){for(const c of cards)c.visible=false;return;}
+  const near=nearIndices(w.cam.p.x,w.cam.p.z,CARD_RADIUS).slice(0,CARD_POOL);
+  const want=new Set(near.map(n=>n[1]));const free=[];
+  for(const c of cards){if(c.userData.index>=0&&want.has(c.userData.index))want.delete(c.userData.index);else{c.userData.index=-1;c.visible=false;free.push(c);}}
+  for(const i of want){const c=free.pop();if(!c)break;c.userData.index=i;c.material.map=cardTexture(i);c.material.needsUpdate=true;c.visible=true;}
+  for(const c of cards){if(!c.visible)continue;const i=c.userData.index,x=layout.pos[i*3],z=layout.pos[i*3+2],dist=Math.hypot(x-w.cam.p.x,z-w.cam.p.z);
+   c.position.set(x,LEVEL_Y+.62+(state.selected===i?.25:0),z);c.lookAt(w.cam.p.x,c.position.y,w.cam.p.z);c.material.opacity=clamp((CARD_RADIUS-dist)/1.4,0,1)*(state.selected===i||state.hover===i?1:.9);}
+ }
+
+ // ---------------------------------------------------------------- UI
+ const style=document.createElement("style");
+ style.textContent=`
+#rmf-panel{position:absolute;right:14px;top:82px;bottom:78px;width:330px;pointer-events:auto;background:rgba(9,22,35,.96);border:1px solid rgba(164,200,218,.19);border-radius:14px;display:flex;flex-direction:column;box-shadow:0 16px 50px #0004;overflow:hidden}
+#rmf-panel[hidden],#rmf-dock[hidden],#rmf-hint[hidden],#rmf-tip[hidden]{display:none!important}
+#rmf-panel header{padding:10px 14px;border-bottom:1px solid rgba(164,200,218,.19)}#rmf-panel header strong{font:20px Georgia,serif;display:block}#rmf-panel header small{color:#acbac4;font-size:10px}
+#rmf-panel .rmf-body{overflow:auto;padding:10px 14px;scrollbar-width:thin;flex:1}
+#rmf-panel input{width:100%}#rmf-panel h3{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;margin:14px 0 6px;color:#9dbacb}
+#rmf-galleries{display:grid;gap:3px}#rmf-galleries button{display:flex;align-items:center;gap:7px;text-align:left;padding:5px 8px;font-size:11px}
+#rmf-galleries button i{width:10px;height:10px;border-radius:3px;flex:none}#rmf-galleries button span:last-child{margin-left:auto;color:#7c9aaa;font-size:10px}
+#rmf-sources{display:flex;flex-wrap:wrap;gap:5px}#rmf-sources button{font-size:10px;padding:4px 7px}
+#rmf-results button{display:block;width:100%;text-align:left;margin:3px 0;padding:6px 9px;font-size:11px}#rmf-results small{display:block;color:#92aebb}
+#rmf-detail{border:1px solid rgba(164,200,218,.19);border-radius:10px;padding:10px 12px;margin-top:8px;background:#0a1826}
+#rmf-detail h2{font:20px/1.2 Georgia,serif;margin:4px 0 8px}#rmf-detail p{color:#c2d7e2;font-size:12px;margin:5px 0}#rmf-detail .ra-actions{margin-top:9px}
+#rmf-detail .rmf-chip{display:inline-block;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:700;color:#08131c;margin:0 4px 4px 0}
+#rmf-panel footer{padding:6px 13px;border-top:1px solid rgba(164,200,218,.19);color:#d8c699;font-size:10px}
+#rmf-dock,#rmf-hint{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#0b2030ef;border:1px solid #99c9dc55;border-radius:9px;padding:8px 12px;pointer-events:auto;white-space:nowrap}
+#rmf-dock button,#rmf-hint button{margin-left:8px}
+#rmf-tip{position:absolute;pointer-events:none;background:#081725ed;border:1px solid #a7cee444;color:#e0edf4;padding:6px 9px;border-radius:7px;font-size:11px;max-width:240px;z-index:30}
+#rmf-tip small{display:block;color:#92aebb}
+@media(max-width:1000px){#rmf-panel{width:285px}}
+@media(max-width:700px){#rmf-panel{top:115px;left:8px;right:8px;width:auto;bottom:auto;max-height:46%}#rmf-dock,#rmf-hint{white-space:normal;font-size:10px;max-width:calc(100% - 20px)}}`;
+ document.head.append(style);
+ const panel=document.createElement("section");panel.id="rmf-panel";panel.hidden=true;panel.setAttribute("aria-label","Mondo floor");
+ panel.innerHTML=`<header><strong>Mondo floor · Level −1</strong><small id="rmf-count">Loading the Mondo rare-disease set…</small></header><div class="rmf-body"><input id="rmf-search" type="search" placeholder="Find a disease by name…" aria-label="Search the Mondo floor"><div id="rmf-results"></div><div id="rmf-detail" hidden></div><h3>Galleries</h3><div id="rmf-galleries"></div><h3>Listed by</h3><div id="rmf-sources"><button data-bit="0" aria-pressed="true">All</button><button data-bit="2">NORD</button><button data-bit="1">GARD</button><button data-bit="4">Orphanet</button><button data-bit="8">OMIM</button></div><h3>Reading a tile</h3><p class="ra-muted" style="font-size:11px;margin:0">Colour = gallery. Circle, hexagon or square = disease, syndromic disease or disease group; bigger glyph = more subtypes. Dots: GARD, NORD, Orphanet, OMIM. Bars: synonyms (left), cross-references (right). Line = has a definition.</p></div><footer id="rmf-source">Mondo Disease Ontology · CC BY 4.0 · ontology terms, not medical advice.</footer>`;
+ const dock=document.createElement("div");dock.id="rmf-dock";dock.hidden=true;dock.innerHTML=`<span id="rmf-where">Mondo floor</span><button id="rmf-overview" aria-pressed="false" title="See the whole floor from above (O)">Overview</button><button id="rmf-panel-toggle">Panel</button><button id="rmf-up">Library · Esc</button>`;
+ const hint=document.createElement("div");hint.id="rmf-hint";hint.hidden=true;hint.innerHTML=`<span>Stairwell · E / Enter to go down to the Mondo floor</span><button id="rmf-descend">Go down</button>`;
+ const tip=document.createElement("div");tip.id="rmf-tip";tip.hidden=true;
+ ui.append(panel,dock,hint,tip);
+ const nav=document.createElement("button");nav.id="rmf-nav";nav.textContent="Mondo floor";nav.title="Go down to the Mondo floor: every rare disease as an image";
+ (ui.querySelector(".ra-bar .ra-group")||ui).appendChild(nav);
+
+ function setStateAttr(i,v){if(!tiles||i<0)return;const a=tiles.geometry.attributes.aState;a.array[i]=v;a.needsUpdate=true;}
+ function restate(){if(!tiles)return;const a=tiles.geometry.attributes.aState;a.array.fill(0);for(const i of state.matches)a.array[i]=3;if(state.hover>=0)a.array[state.hover]=Math.max(a.array[state.hover],1);if(state.selected>=0)a.array[state.selected]=2;a.needsUpdate=true;}
+ function refreshFilters(){
+  if(!tiles)return;const d=state.data,a=tiles.geometry.attributes.aAlpha;
+  for(let i=0;i<d.n;i++){let v=1;if(state.filterBits&&!(d.flags[i]&state.filterBits))v=.12;if(state.focusCat>=0&&d.cat[i]!==state.focusCat)v=Math.min(v,.22);a.array[i]=v;}
+  a.needsUpdate=true;
+  let shown=0;for(let i=0;i<d.n;i++)if(a.array[i]>.5)shown++;
+  get("rmf-count").textContent=fmt(shown)+" of "+fmt(d.n)+" rare diseases"+(state.notice?" · "+state.notice:"")+(state.source?" · "+state.source:"");
+ }
+ function renderGalleries(){
+  const d=state.data,host=get("rmf-galleries");host.replaceChildren();
+  d.categories.forEach((c,i)=>{if(!layout.counts[i])return;const b=document.createElement("button");b.dataset.cat=i;b.setAttribute("aria-pressed",String(state.focusCat===i));b.innerHTML=`<i style="background:${CATEGORY_COLOURS[i%24]}"></i><span>${esc(c.label)}</span><span>${fmt(layout.counts[i])}</span>`;b.title="Walk to the "+c.label+" gallery; click again to clear the highlight";host.append(b);});
+ }
+ function showDetail(i){
+  const d=state.data,el=get("rmf-detail");if(i<0){el.hidden=true;return;}
+  const f=d.flags[i],id="MONDO:"+String(d.ids[i]).padStart(7,"0"),cat=d.categories[d.cat[i]];
+  const galleries=d.categories.filter((c,k)=>d.cats[i]&(1<<k)).map(c=>c.label);
+  const srcs=[["GARD",1],["NORD",2],["Orphanet",4],["OMIM",8]].filter(([,b])=>f&b).map(([n])=>`<span class="rmf-chip" style="background:${SOURCE_COLOURS[n]}">${n}</span>`).join("");
+  const def=d.definitions?.[i];
+  el.hidden=false;el.innerHTML=`<span class="ra-badge" style="border-color:${CATEGORY_COLOURS[d.cat[i]%24]}66;color:${CATEGORY_COLOURS[d.cat[i]%24]}">${esc(cat.label.toUpperCase())}${(f&32)?" · SYNDROMIC":""}${(f&128)?" · GROUP":""}</span><h2>${esc(d.names[i])}</h2><p>${esc(id)}${galleries.length>1?" · also in "+esc(galleries.filter(g=>g!==cat.label).join(", ")):""}</p><p>${srcs||'<span class="ra-muted">Mondo rare subset only</span>'}</p><p>${d.syn[i]} synonyms · ${d.xref[i]} cross-references · ${d.kids[i]} subtypes beneath it · depth ${d.depth[i]} in the ontology</p>${def?`<p class="ra-quote">${esc(def)}</p>`:`<p class="ra-muted">${(f&16)?"The Mondo record has a definition; the full dataset carries it.":"No definition in Mondo."}</p>`}<div class="ra-actions"><button data-act="walk">Walk to it</button><a href="https://monarchinitiative.org/${encodeURIComponent(id)}" target="_blank" rel="noopener"><button type="button">Open Mondo record ↗</button></a><button data-act="clear">Clear</button></div><p class="ra-caution" style="font-size:10px">An ontology term, not clinical guidance. Nothing here replaces a clinician.</p>`;
+ }
+ function select(i){state.selected=i;restate();showDetail(i);if(i>=0){panel.hidden=false;}}
+ function flyTo(x,z,lookX,lookZ,duration=1.3){state.overview=false;get("rmf-overview").setAttribute("aria-pressed","false");state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(x,LEVEL_Y+EYE,z),target:new THREE.Vector3(lookX,LEVEL_Y+.3,lookZ),elapsed:0,duration};}
+ function walkToTile(i){const x=layout.pos[i*3],z=layout.pos[i*3+2];let dx=w.cam.p.x-x,dz=w.cam.p.z-z;const len=Math.hypot(dx,dz)||1;dx/=len;dz/=len;flyTo(x+dx*1.9,z+dz*1.9,x,z);}
+ function walkToGallery(c){const s=layout.sectors.find(s=>s.c===c);if(!s||s.a1===s.a0)return;const mid=(s.a0+s.a1)/2,r=HUB_R-2.2;flyTo(Math.sin(mid)*r,Math.cos(mid)*r,Math.sin(mid)*(r+6),Math.cos(mid)*(r+6));}
+ function search(){
+  const q=get("rmf-search").value.trim().toLowerCase(),host=get("rmf-results");host.replaceChildren();state.matches=[];
+  if(q.length>=2&&state.data){const d=state.data;for(let i=0;i<d.n&&state.matches.length<400;i++)if(d.names[i].toLowerCase().includes(q))state.matches.push(i);
+   for(const i of state.matches.slice(0,40)){const b=document.createElement("button");b.dataset.index=i;b.innerHTML=esc(d.names[i])+"<small>"+esc(d.categories[d.cat[i]].label)+" · MONDO:"+String(d.ids[i]).padStart(7,"0")+"</small>";host.append(b);}
+   if(!state.matches.length){const p=document.createElement("p");p.className="ra-muted";p.textContent="No disease on the floor matches that. Only Mondo names are searched.";host.append(p);}
+   else if(state.matches.length>40){const p=document.createElement("p");p.className="ra-muted";p.textContent=fmt(state.matches.length)+" matches lit on the floor; the first 40 are listed.";host.append(p);}}
+  restate();
+ }
+
+ // ---------------------------------------------------------------- levels
+ function fade(toBlack){if(!w.fade)return Promise.resolve();w.fade.style.transition="opacity .45s";w.fade.style.opacity=toBlack?"1":"0";return new Promise(r=>setTimeout(r,toBlack?460:60)).then(()=>{if(!toBlack)setTimeout(()=>{if(w.fade)w.fade.style.transition="";},500);});}
+ async function descend(){
+  if(state.level!=="library"||state.busy)return;state.busy=true;
+  if(window.RareAtlasWorkstations?.state?.seat)window.RareAtlasWorkstations.stand();
+  A.demo=(A.demo||0)+1;R.state.fly=null;R.state.keys.clear();R.state.walk=false;get("rai-walk")?.setAttribute("aria-pressed","false");
+  const inspector=get("rai-inspector");state.beforeInspector=inspector?inspector.hidden:true;
+  await fade(true);
+  state.level="mondo";if(inspector)inspector.hidden=true;hint.hidden=true;
+  if(w.scene.fog){state.fogDensity=w.scene.fog.density;w.scene.fog.density=.0045;}
+  const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-1.2;
+  w.cam.p.set(Math.sin(a)*r,LEVEL_Y+EYE,Math.cos(a)*r);w.cam.target.set(Math.sin(a)*(r+4),LEVEL_Y+1.1,Math.cos(a)*(r+4));
+  panel.hidden=matchMedia("(max-width:700px)").matches;dock.hidden=false;get("rmf-where").textContent="Mondo floor · "+(state.data?fmt(state.data.n)+" rare diseases":"loading");
+  await fade(false);state.busy=false;canvas.focus({preventScroll:true});
+ }
+ async function ascend(instant){
+  if(state.level!=="mondo"||state.busy)return;state.busy=true;
+  if(!instant)await fade(true);
+  state.level="library";state.overview=false;state.fly=null;state.drag=null;
+  if(w.scene.fog&&state.fogDensity!=null)w.scene.fog.density=state.fogDensity;
+  w.cam.p.set(STAIR.x,1.8,STAIR.z-3.6);w.cam.target.set(STAIR.x,1.3,STAIR.z);
+  R.state.fly=null;R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");
+  const inspector=get("rai-inspector");if(inspector)inspector.hidden=R.state.drawer?false:state.beforeInspector;
+  panel.hidden=dock.hidden=tip.hidden=true;for(const c of cards)c.visible=false;state.hover=-1;restate();
+  if(!instant)await fade(false);state.busy=false;canvas.focus({preventScroll:true});
+ }
+ function toggleOverview(force){
+  if(state.level!=="mondo")return;state.overview=force===undefined?!state.overview:force;get("rmf-overview").setAttribute("aria-pressed",String(state.overview));
+  if(state.overview){const rOut=layout?Math.max(...layout.sectors.map(s=>s.rOut)):40;state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(0,LEVEL_Y+rOut*1.55,rOut*.55),target:new THREE.Vector3(0,LEVEL_Y,0),elapsed:0,duration:1.6};}
+  else{const a=layout?layout.sectors[0].a0-.05:0,r=HUB_R-1.2;flyTo(Math.sin(a)*r,Math.cos(a)*r,Math.sin(a)*(r+4),Math.cos(a)*(r+4),1.4);}
+ }
+
+ // ---------------------------------------------------------------- input
+ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),floorPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-LEVEL_Y),hitPoint=new THREE.Vector3();
+ function tileAt(e){
+  if(!layout)return-1;const b=canvas.getBoundingClientRect();ndc.set((e.clientX-b.left)/Math.max(1,b.width)*2-1,-(e.clientY-b.top)/Math.max(1,b.height)*2+1);ray.setFromCamera(ndc,w.camera);
+  if(!ray.ray.intersectPlane(floorPlane,hitPoint))return-1;const near=nearIndices(hitPoint.x,hitPoint.z,Math.max(TILE*.75,hitPoint.distanceTo(w.cam.p)*.012));return near.length?near[0][1]:-1;
+ }
+ on(window,"pointerdown",e=>{
+  if(e.target!==canvas)return;
+  if(state.level==="mondo"){e.preventDefault();e.stopImmediatePropagation();state.drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};try{canvas.setPointerCapture(e.pointerId);}catch(_){}return;}
+  if(R.state.fly||window.RareAtlasWorkstations?.state?.seat)return;
+  const b=canvas.getBoundingClientRect();ndc.set((e.clientX-b.left)/Math.max(1,b.width)*2-1,-(e.clientY-b.top)/Math.max(1,b.height)*2+1);ray.setFromCamera(ndc,w.camera);
+  if(ray.intersectObject(ground,true).length){e.preventDefault();e.stopImmediatePropagation();if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.2,STAIR.z),elapsed:0,duration:1.15};}}
+ },true);
+ on(window,"pointermove",e=>{
+  if(state.level!=="mondo")return;
+  if(state.drag&&state.drag.id===e.pointerId){e.stopImmediatePropagation();const dx=e.clientX-state.drag.x,dy=e.clientY-state.drag.y;state.drag.x=e.clientX;state.drag.y=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)state.drag.moved=true;
+   if(state.overview){const rel=w.cam.p.clone().sub(w.cam.target),sp=new THREE.Spherical().setFromVector3(rel);sp.theta-=dx*.004;sp.phi=clamp(sp.phi+dy*.003,.12,1.2);rel.setFromSpherical(sp);w.cam.p.copy(w.cam.target).add(rel);}
+   else{const rel=w.cam.target.clone().sub(w.cam.p),sp=new THREE.Spherical().setFromVector3(rel);sp.theta-=dx*.005;sp.phi=clamp(sp.phi+dy*.004,.5,2.3);sp.radius=6;rel.setFromSpherical(sp);w.cam.target.copy(w.cam.p).add(rel);}
+   state.fly=null;return;}
+  if(e.target!==canvas)return;e.stopImmediatePropagation();
+  const i=tileAt(e);if(i!==state.hover){state.hover=i;restate();}
+  if(i>=0){const d=state.data;tip.hidden=false;tip.innerHTML=esc(d.names[i])+"<small>"+esc(d.categories[d.cat[i]].label)+" · MONDO:"+String(d.ids[i]).padStart(7,"0")+"</small>";const b=ui.getBoundingClientRect();tip.style.left=Math.min(b.width-250,e.clientX-b.left+14)+"px";tip.style.top=(e.clientY-b.top+16)+"px";canvas.style.cursor="pointer";}
+  else{tip.hidden=true;canvas.style.cursor="";}
+ },true);
+ const endDrag=e=>{if(state.level!=="mondo"||!state.drag||state.drag.id!==e.pointerId)return;e.stopImmediatePropagation();const moved=state.drag.moved;state.drag=null;try{canvas.releasePointerCapture(e.pointerId);}catch(_){}
+  if(!moved){const i=tileAt(e);if(i>=0){select(i);if(e.pointerType==="touch")walkToTile(i);}else select(-1);}};
+ on(window,"pointerup",endDrag,true);on(window,"pointercancel",endDrag,true);
+ on(window,"wheel",e=>{if(state.level!=="mondo"||e.target!==canvas)return;e.preventDefault();e.stopImmediatePropagation();if(state.overview){const rel=w.cam.p.clone().sub(w.cam.target);rel.multiplyScalar(clamp(1+e.deltaY*.001,.9,1.1));if(rel.length()>12&&rel.length()<200)w.cam.p.copy(w.cam.target).add(rel);}},{capture:true,passive:false});
+ on(window,"keydown",e=>{
+  const k=e.key.toLowerCase();
+  if(state.level==="mondo"){
+   if(ui.contains(e.target)&&e.target.tagName==="INPUT"){if(k==="escape"){e.target.blur();canvas.focus();}return;}
+   e.stopImmediatePropagation();
+   if(k==="escape"){e.preventDefault();if(state.selected>=0)select(-1);else ascend();return;}
+   if(k==="o"){e.preventDefault();toggleOverview();return;}
+   if(["w","a","s","d","shift","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){e.preventDefault();state.keys.add(k);state.fly=null;if(state.overview)toggleOverview(false);}
+   return;
+  }
+  if(ui.contains(e.target)||e.target.isContentEditable)return;
+  if(state.near&&(k==="e"||k==="enter")){e.preventDefault();e.stopImmediatePropagation();descend();}
+ },true);
+ on(window,"keyup",e=>{state.keys.delete(e.key.toLowerCase());},true);
+ on(window,"blur",()=>state.keys.clear());
+ on(window,"click",e=>{if(state.level!=="mondo")return;const b=e.target.closest("button");if(b&&!panel.contains(b)&&!dock.contains(b)&&(b.dataset.collection!==undefined||["walk","overview","approach","tour","map"].includes(b.dataset.action)||b.id==="rac-computers"))ascend(true);},true);
+ on(nav,"click",()=>{if(state.level==="mondo")return;if(state.near)descend();else{R.state.walk=true;R.state.keys.clear();get("rai-walk")?.setAttribute("aria-pressed","true");R.state.fly={from:w.cam.p.clone(),look:w.cam.target.clone(),to:new THREE.Vector3(STAIR.x,1.8,STAIR.z-3.4),target:new THREE.Vector3(STAIR.x,1.2,STAIR.z),elapsed:0,duration:1.15};canvas.focus({preventScroll:true});}});
+ on(get("rmf-descend"),"click",descend);on(get("rmf-up"),"click",ascend);on(get("rmf-overview"),"click",()=>toggleOverview());
+ on(get("rmf-panel-toggle"),"click",()=>{panel.hidden=!panel.hidden;});
+ on(get("rmf-search"),"input",search);
+ on(panel,"click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.index!==undefined){const i=Number(b.dataset.index);select(i);walkToTile(i);}
+  else if(b.dataset.cat!==undefined){const c=Number(b.dataset.cat);state.focusCat=state.focusCat===c?-1:c;refreshFilters();renderGalleries();if(state.focusCat>=0)walkToGallery(c);}
+  else if(b.dataset.bit!==undefined){state.filterBits=Number(b.dataset.bit);for(const x of get("rmf-sources").children)x.setAttribute("aria-pressed",String(Number(x.dataset.bit)===state.filterBits));refreshFilters();}
+  else if(b.dataset.act==="walk"&&state.selected>=0)walkToTile(state.selected);
+  else if(b.dataset.act==="clear")select(-1);
+ });
+
+ // ---------------------------------------------------------------- loop
+ const forward=new THREE.Vector3(),right=new THREE.Vector3(),up=new THREE.Vector3(0,1,0),step=new THREE.Vector3();
+ function tick(ms){
+  if(state.disposed)return;if(A.world!==w){dispose();return;}
+  const dt=state.last?Math.min(.05,(ms-state.last)/1000):0;state.last=ms;tileMat.uniforms.uTime.value=ms/1000;
+  if(!document.hidden){
+   if(state.level==="mondo"){
+    R.state.walk=false;R.state.fly=null;R.state.keys.clear();w.pointer.tx=w.pointer.ty=0;
+    if(state.fly){const f=state.fly;f.elapsed+=dt;const t=clamp(f.elapsed/f.duration,0,1),k=ease(t);w.cam.p.copy(f.from).lerp(f.to,k);w.cam.target.copy(f.look).lerp(f.target,k);if(t>=1)state.fly=null;}
+    else if(!state.overview&&state.keys.size){
+     forward.copy(w.cam.target).sub(w.cam.p);forward.y=0;forward.normalize();right.crossVectors(forward,up).normalize();
+     const z=(state.keys.has("w")||state.keys.has("arrowup")?1:0)-(state.keys.has("s")||state.keys.has("arrowdown")?1:0);
+     const x=(state.keys.has("d")||state.keys.has("arrowright")?1:0)-(state.keys.has("a")||state.keys.has("arrowleft")?1:0);
+     step.copy(forward).multiplyScalar(z).addScaledVector(right,x);
+     if(step.lengthSq()){step.normalize().multiplyScalar(dt*(state.keys.has("shift")?7:3.2));const nx=w.cam.p.x+step.x,nz=w.cam.p.z+step.z,r=Math.hypot(nx,nz);
+      if(r<FLOOR_R-2.5&&r>.9){w.cam.p.x=nx;w.cam.p.z=nz;w.cam.target.x+=step.x;w.cam.target.z+=step.z;}}
+     w.cam.p.y=LEVEL_Y+EYE;
+    }
+    for(const l of galleryLabels.children)if(l.userData.label)l.lookAt(w.cam.p);
+    updateCards();
+    state.near=false;hint.hidden=true;
+   }else{
+    const nearStairs=R.state.walk&&!R.state.fly&&Math.hypot(w.cam.p.x-STAIR.x,w.cam.p.z-STAIR.z)<2.6&&!window.RareAtlasWorkstations?.state?.seat;
+    state.near=nearStairs;hint.hidden=!nearStairs;
+   }
+  }
+  state.raf=requestAnimationFrame(tick);
+ }
+
+ // ---------------------------------------------------------------- data
+ async function fetchData(){
+  for(const url of DATA_URLS){
+   try{const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(url,{signal:ctrl.signal});clearTimeout(timer);if(!res.ok)continue;const json=await res.json();
+    if(json?.format?.startsWith("mondo-floor-compact"))return{data:decode(json),source:url.startsWith("asksary-asset")?"library asset":new URL(url).hostname};
+    if(Array.isArray(json?.records))return{data:fromRecords(json),source:url.startsWith("asksary-asset")?"library asset":new URL(url).hostname};
+   }catch(error){console.warn("Mondo floor: could not load",url,error.message);}
+  }
+  if(window.MONDO_FLOOR_SAMPLE)return{data:decode(window.MONDO_FLOOR_SAMPLE),source:"embedded sample",notice:"sample only — the full set could not be fetched; upload mondo-floor.compact.json to the library as “mondo-floor” or set window.MONDO_FLOOR_URL"};
+  throw new Error("No Mondo data could be loaded.");
+ }
+ function adopt({data,source,notice}){
+  if(state.disposed)return;state.data=data;state.source=source;state.notice=notice||"";
+  buildTiles(data);renderGalleries();refreshFilters();
+  if(state.level==="mondo")get("rmf-where").textContent="Mondo floor · "+fmt(data.n)+" rare diseases";
+  get("rmf-source").textContent="Mondo Disease Ontology"+(data.builtAt?" · built "+data.builtAt.slice(0,10):"")+" · "+fmt(data.n)+" terms · CC BY 4.0 · not medical advice.";
+ }
+ fetchData().then(adopt).catch(error=>{get("rmf-count").textContent="Mondo data unavailable: "+error.message;console.error(error);});
+
+ function dispose(){
+  if(state.disposed)return;state.disposed=true;cancelAnimationFrame(state.raf);
+  if(state.level==="mondo"){if(w.scene.fog&&state.fogDensity!=null)w.scene.fog.density=state.fogDensity;w.cam.p.set(STAIR.x,1.8,STAIR.z-3.6);w.cam.target.set(STAIR.x,1.3,STAIR.z);R.state.walk=true;const inspector=get("rai-inspector");if(inspector)inspector.hidden=state.beforeInspector;if(w.fade)w.fade.style.opacity="0";}
+  off.forEach(fn=>fn());disposeTiles();root.removeFromParent();ground.removeFromParent();for(const tx of cardCache.values())tx.dispose();cardCache.clear();
+  resources.forEach(r=>{try{r.dispose();}catch(_){}});panel.remove();dock.remove();hint.remove();tip.remove();nav.remove();style.remove();
+  if(window.RareAtlasMondoFloor?.root===root)window.RareAtlasMondoFloor=null;
+ }
+ window.RareAtlasMondoFloor={root,ground,state,descend,ascend,toggleOverview,select,walkToTile,walkToGallery,search,adopt,dispose,get layout(){return layout;}};
+ state.raf=requestAnimationFrame(tick);
+ return "Added the Mondo floor: a stairwell beside the library leads to a lower level where every Mondo rare disease is a tile drawn from its own metadata, grouped by body system, with search, galleries, source filters and an overview. Existing scene, computers and research are preserved.";
+}
+
+(async()=>{
+ const notice=document.getElementById("startup");
+ try{
+  const response=await fetch("asksary-asset://liveloop-63");
+  if(!response.ok)throw new Error("Could not open the supplied library asset.");
+  const base=await response.text();
+  if(!/<html[\s>]/i.test(base))throw new Error("The library asset is not an HTML document.");
+  const startup=`
+window.MONDO_FLOOR_SAMPLE={"format":"mondo-floor-compact/1","builtAt":"2026-10-04T00:10:29.666Z","source":{"name":"Mondo Disease Ontology","url":"https://github.com/monarch-initiative/mondo/releases/latest/download/mondo.json","retrieved":"2026-10-04","subset":"rare","note":"sample of every 40th record"},"categories":[{"id":"MONDO_0005071","label":"Nervous system","mondoLabel":"nervous system disorder","count":50},{"id":"MONDO_0002081","label":"Musculoskeletal","mondoLabel":"musculoskeletal system disorder","count":35},{"id":"MONDO_0003900","label":"Connective tissue","mondoLabel":"connective tissue disorder","count":18},{"id":"MONDO_0005151","label":"Endocrine","mondoLabel":"endocrine system disorder","count":8},{"id":"MONDO_0005066","label":"Metabolic","mondoLabel":"metabolic disease","count":36},{"id":"MONDO_0005046","label":"Immune system","mondoLabel":"immune system disorder","count":8},{"id":"MONDO_0005570","label":"Blood","mondoLabel":"hematologic disorder","count":25},{"id":"MONDO_0004995","label":"Heart & vessels","mondoLabel":"cardiovascular disorder","count":27},{"id":"MONDO_0005087","label":"Respiratory","mondoLabel":"respiratory system disorder","count":10},{"id":"MONDO_0004335","label":"Digestive","mondoLabel":"digestive system disorder","count":19},{"id":"MONDO_0002118","label":"Urinary","mondoLabel":"urinary system disorder","count":13},{"id":"MONDO_0005039","label":"Reproductive","mondoLabel":"reproductive system disorder","count":19},{"id":"MONDO_0002051","label":"Skin","mondoLabel":"integumentary system disorder","count":24},{"id":"MONDO_0024458","label":"Vision","mondoLabel":"disorder of visual system","count":27},{"id":"MONDO_0002409","label":"Hearing","mondoLabel":"auditory system disorder","count":5},{"id":"MONDO_0024623","label":"Ear, nose & throat","mondoLabel":"otorhinolaryngologic disease","count":4},{"id":"MONDO_0006858","label":"Mouth","mondoLabel":"mouth disorder","count":4},{"id":"MONDO_0002657","label":"Breast","mondoLabel":"breast disorder","count":2},{"id":"MONDO_0005070","label":"Neoplasm","mondoLabel":"neoplasm","count":14},{"id":"MONDO_0005550","label":"Infectious","mondoLabel":"infectious disease","count":14},{"id":"MONDO_0002025","label":"Mental","mondoLabel":"psychiatric disorder","count":5},{"id":"MONDO_0002254","label":"Syndromic","mondoLabel":"syndromic disease","count":17},{"id":null,"label":"Other","mondoLabel":"unclassified","count":28}],"flagBits":{"GARD":1,"NORD":2,"ORPHANET":4,"OMIM":8,"DEFINITION":16,"SYNDROMIC":32,"CLINGEN":64,"GROUPING":128},"n":412,"names":"2p25.3 microduplication syndrome\\nAlexander disease type II\\nAngelman syndrome due to a point mutation\\nautosomal dominant childhood-onset proximal spinal muscular atrophy without contractures\\nautosomal recessive spastic paraplegia type 59\\nbasal ganglia calcification, idiopathic, 5\\nBrown-Vialetto-van Laere syndrome 1\\ncerebral sclerosis similar to Pelizaeus-Merzbacher disease\\nCharcot-Marie-Tooth disease type 2B\\nCharcot-Marie-Tooth disease, axonal, type 2KK\\nchronic toxic polyneuropathy\\ncongenital Horner syndrome\\ncortical dysplasia, complex, with other brain malformations 9\\ndevelopmental and epileptic encephalopathy 116\\ndevelopmental and epileptic encephalopathy, 53\\ndevelopmental malformations-deafness-dystonia syndrome\\nearly-onset Parkinson disease 20\\nepisodic ataxia type 1\\nfamilial temporal lobe epilepsy 4\\ngeneralized epilepsy with febrile seizures plus, type 4\\nhereditary cerebellar ataxia\\nhereditary spastic paraplegia 30\\nholoprosencephaly-caudal dysgenesis syndrome\\ninfantile epileptic-dyskinetic encephalopathy\\nintellectual disability-hyperkinetic movement-truncal ataxia syndrome\\nintellectual disability, Wolff type\\nintellectual disability, X-linked 95\\nisolated microcephaly\\nleukodystrophy, hypomyelinating, 11\\nlimbic encephalitis\\nmalignant migrating partial seizures of infancy\\nmicrocephaly 23, primary, autosomal recessive\\nMorimoto-Ryu-Malicdan neuromuscular syndrome\\nmyotonia congenita, autosomal dominant\\nneurodevelopmental disorder with ataxia, hypotonia, and microcephaly\\nneurodevelopmental disorder with progressive microcephaly, spasticity, and brain anomalies\\nneuromuscular disorder, congenital, with dysmorphic facies\\nnevoid basal cell carcinoma syndrome\\nparaneoplastic limbic encephalitis\\nperiventricular nodular heterotopia\\npontocerebellar hypoplasia type 2D\\nprimary tethered cord syndrome\\nretained medullary cord\\nseizures, benign familial neonatal, 3\\nspastic paraplegia 30B, autosomal recessive\\nspinal muscular atrophy with respiratory distress type 2\\nsubcortical band heterotopia\\nTMEM63B-related developmental and epileptic encephalopathy with anemia\\nvon Hippel-Lindau disease\\nX-linked intellectual disability, Schutz type\\nacrocephalopolysyndactyly\\nadult-onset distal myopathy due to VCP mutation\\narthrogryposis, distal, type 2B2\\nautosomal recessive distal osteolysis syndrome\\nBethlem myopathy\\nbrachyolmia type 1, Hobaek type\\ncentral polydactyly of fingers, bilateral\\nCoffin-Siris syndrome 8\\ncongenital myasthenic syndrome 16\\nCooks syndrome\\ncraniosynostosis-anal anomalies-porokeratosis syndrome\\nDMD-related muscular dystrophy\\nfamilial digital arthropathy-brachydactyly\\nfrontonasal dysplasia\\nhumeral agenesis/hypoplasia\\nIMAGe syndrome\\nKienbock disease\\nMadelung deformity\\nmetaphyseal acroscyphodysplasia\\nmulticentric carpo-tarsal osteolysis with or without nephropathy\\nmuscular dystrophy, limb-girdle, autosomal recessive 28\\nmyopathy, myofibrillar, 9, with early respiratory failure\\nnon-syndromic bilambdoid craniosynostosis\\norofaciodigital syndrome 16\\nosteogenesis imperfecta type 4\\nPaget disease of bone 2, early-onset\\npolydactyly, postaxial, type A2\\nprimordial dwarfism and slender bone disorder\\nrigid spine syndrome\\nSheldon-hall syndrome\\nsplit hand, unilateral\\nspondyloepiphyseal dysplasia tarda, Kohn type\\nsyngnathia multiple anomalies\\ntitinopathy with congenital contractures\\nVolkmann contracture\\nacute erythroid leukemia\\nacute myeloid leukemia, inv(16)(p13.3;q24.3)\\nacute myeloid leukemia, t(9;11)(p21.3;q23.3)\\nanti-MDA5 dermatomyositis\\nbone neoplasm\\nchondroblastoma\\ndartoic leiomyoma\\nEwing sarcoma/peripheral primitive neuroectodermal tumor of bone\\ngrowth hormone-producing pituitary gland neoplasm\\njugular foramen meningioma\\nmalignant giant cell tumor of soft parts\\nmyeloproliferative disease, autosomal recessive\\nossification of the posterior longitudinal ligament of the spine\\npituitary cancer\\nretinal vasculopathy with cerebral leukoencephalopathy and systemic manifestations\\nsolitary bone cyst\\nsystemic-onset juvenile idiopathic arthritis\\nuterine corpus leiomyoma\\naldosterone-producing adrenal cortex adenoma\\ncorticosteroid-binding globulin deficiency\\nglucocorticoid deficiency 2\\nhypoaldosteronism disease\\nmetastatic carcinoma in the adrenal medulla\\npheochromocytoma/paraganglioma syndrome 6\\nshort stature due to partial GHR deficiency\\nthyroid gland undifferentiated (anaplastic) carcinoma\\n3-methylcrotonyl-CoA carboxylase deficiency\\nadult Refsum disease due to PEX7 defect\\namyloidosis, hereditary systemic 6\\nautosomal recessive limb-girdle muscular dystrophy type 2I\\ncarnosinemia\\ncoenzyme Q10 deficiency\\ncombined oxidative phosphorylation deficiency 38\\ncongenital disorder of glycosylation with defective fucosylation\\nd-2-hydroxyglutaric aciduria 2\\ndiarrhea-vomiting due to trehalase deficiency\\ndisorder of peptide and amine metabolism\\nessential fructosuria\\nGilbert syndrome\\nglycogen storage disease V\\nhereditary sensory and autonomic neuropathy type 1\\nhyperekplexia 1\\nhypokalemic periodic paralysis\\ninborn disorder of phenylalanine and tyrosine metabolism\\nintellectual developmental disorder, autosomal recessive 73\\nintellectual disability, autosomal recessive 50\\nlactic aciduria due to D-lactic acid\\nmaternal riboflavin deficiency\\nmismatch repair cancer syndrome 3\\nmitochondrial complex I deficiency, nuclear type 36\\nmitochondrial complex IV deficiency, nuclear type 4\\nmitochondrial encephalomyopathy\\nmucopolysaccharidosis type 7\\nmyopathy caused by variation in CRPPA\\nneuropathy, hereditary sensory, type 1F\\nperoxisome biogenesis disorder 4A (Zellweger)\\nPNPLA6-related spastic paraplegia with or without ataxia\\nPSPH deficiency\\nsensory ataxic neuropathy, dysarthria, and ophthalmoparesis\\nspondyloepimetaphyseal dysplasia, PAPSS2 type\\nthyrotoxic periodic paralysis\\nZellweger-like syndrome without peroxisomal anomalies\\nBENTA disease\\ncomplement component 4a deficiency\\ngeneralized eruptive histiocytosis\\nimmunodeficiency 19\\ninherited glutathione synthetase deficiency\\nnecrobiotic xanthogranuloma\\nprimary antiphospholipid syndrome\\nskeletal dysplasia-T-cell immunodeficiency-developmental delay syndrome\\nacquired factor V deficiency\\naggressive systemic mastocytosis\\natypical hemolytic-uremic syndrome with MCP/CD46 anomaly\\nB-lymphoblastic leukemia with NUTM1 rearrangement\\nbone marrow failure syndrome 5\\ncongenital agammaglobulinemia\\ndelta-beta-thalassemia\\ndysgammaglobulinemia\\nfactor X deficiency\\nfetomaternal alloimmune thrombocytopenia 1\\nHBA1-related alpha thalassemia spectrum\\nhereditary antithrombin deficiency\\nhyper-IgE recurrent infection syndrome 4, autosomal recessive\\nimmunodeficiency, common variable, 7\\nleukemoid reaction\\nmarginal zone lymphoma\\nmonocytic leukemia\\nneutropenia, lethal congenital, with eosinophilia\\nphysiological polycythemia\\nprimary familial polycythemia due to EPO receptor mutation\\nselective IgE deficiency disease\\nsplenic sequestration\\nthrombocytopenia 2\\nthymoma type B1\\nwell-differentiated thymic neuroendocrine carcinoma\\nACys amyloidosis\\naortic aneurysm, familial abdominal, 1\\narterial calcification, generalized, of infancy, 2\\natrial standstill\\nbenign atrophic papulosis\\ncardiac conduction disease with or without dilated cardiomyopathy 1\\ncardiomyopathy, familial hypertrophic, 31\\nChar syndrome\\ncongenital anomaly of hepatic vein\\ncongenital systemic arteriovenous fistula\\ndilated cardiomyopathy 1B\\ndouble outlet left ventricle\\neosinophilia-myalgia syndrome\\nfamilial retinal arterial macroaneurysm\\nHELLP syndrome\\nholoacardius amorphus\\nidiopathic hypereosinophilic syndrome\\nLeber optic atrophy and dystonia\\nlymphatic malformation 2\\nmigraine, familial hemiplegic, 4\\nNKX2.5-related congenital, conduction and myopathic heart disease\\npatent ductus arteriosus\\nprimary inferior vena cava aneurysm\\npulmonary valve agenesis-ventricular septal defect-persistent ductus arteriosus syndrome\\nsick sinus syndrome 4\\nthrombophlebitis\\nvibratory angioedema\\nbronchiectasis with or without elevated sweat chloride 1\\nciliary dyskinesia, primary, 53\\ndiaphragmitis\\nhernia, anterior diaphragmatic\\nlaryngo-onycho-cutaneous syndrome\\nmalignant pleural mesothelioma\\npleural epithelioid mesothelioma\\nprimary ciliary dyskinesia 33\\npulmonary veno-occlusive disease and/or pulmonary capillary haemangiomatosis\\nsupraglottis squamous cell carcinoma\\nAlagille syndrome\\nappendix adenocarcinoma\\nbile duct cyst\\ncholestasis, progressive familial intrahepatic, 6\\ncongenital esophageal stenosis\\ndiazoxide-sensitive diffuse hyperinsulinism\\nesophageal small cell neuroendocrine carcinoma\\ngallbladder adenocarcinoma\\ngastric neuroendocrine neoplasm\\nhepatocellular carcinoma\\nileum cancer\\nketamine-induced biliary dilatation\\nmature gastric teratoma\\nMYO5B-related progressive familial intrahepatic cholestasis\\npancreatic intraductal papillary-mucinous neoplasm with high grade dysplasia\\nporphyria due to ALA dehydratase deficiency\\nrefractory celiac disease\\nspontaneous intestinal perforation\\nWaardenburg syndrome type 4B\\nautosomal dominant proximal renal tubular acidosis\\ncarcinoma in situ of urethra\\ncranioectodermal dysplasia 3\\nfamilial primary hypomagnesemia\\nhereditary clear cell renal cell carcinoma\\ninfiltrating bladder urothelial carcinoma sarcomatoid variant\\nmegacystis-megaureter syndrome\\nnephronophthisis-like nephropathy 2\\nparoxysmal nocturnal hemoglobinuria 1\\npseudohypoaldosteronism type 2B\\nrenal nutcracker syndrome\\nshort-rib thoracic dysplasia 21 without polydactyly\\nvesicoureteral reflux 1\\n46,XY sex reversal 6\\nbenign ovarian sex cord-stromal tumor\\ncervical mucinous adenocarcinoma\\ncongenital adrenal hyperplasia due to 11-beta-hydroxylase deficiency\\nestrogen resistance syndrome\\nhand-foot-genital syndrome\\nhypogonadotropic hypogonadism-frontoparietal alopecia syndrome\\nleukodystrophy, hypomyelinating, 8, with or without oligodontia and/or hypogonadotropic hypogonadism\\nmixed germ cell tumor of vulva\\novarian dysgenesis 11\\novarian small cell carcinoma\\npenoscrotal transposition\\npremature ovarian failure 15\\nprostate cancer, hereditary, 4\\nshort stature-pituitary and cerebellar defects-small sella turcica syndrome\\nspermatogenic failure 8\\ntesticular yolk sac tumor, solid pattern\\nuterine ligament serous adenocarcinoma\\nvulvovaginal gingival syndrome\\nacute generalized exanthematous pustulosis\\nanti-p200 pemphigoid\\nautosomal recessive cutis laxa type 2C\\ncervical hypertrichosis-peripheral neuropathy syndrome\\nCowden syndrome 5\\ndermochondrocorneal dystrophy\\ndyskeratosis congenita, digenic\\nelastosis perforans serpiginosa\\nepidermolytic hyperkeratosis 2\\nfamilial tumoral calcinosis\\nGriscelli syndrome type 3\\nhyperpigmentation, progressive cribriform and zosteriform\\nichthyosis, follicular\\nkeratoderma hereditarium mutilans\\nlipodystrophy\\nmonilethrix-3\\nnormophosphatemic familial tumoral calcinosis\\npalmoplantar keratoderma, epidermolytic, 2\\npili gemini\\nprimary cutaneous plasmacytosis\\nRothmund-Thomson syndrome\\nsuperficial epidermolytic ichthyosis\\ntumoral calcinosis, hyperphosphatemic, familial, 2\\nxeroderma pigmentosum, complementation group J\\nAland island eye disease\\nautosomal recessive congenital ichthyosis 4A\\nblepharoptosis-myopia-ectopia lentis syndrome\\ncataract 39 multiple types\\nclassic homocystinuria\\ncone-rod dystrophy 2\\ncongenital stromal corneal dystrophy\\nDuane retraction syndrome 3 with or without deafness\\neyelid sebaceous gland carcinoma\\nGaucher disease\\nGUCY2D-related recessive retinopathy\\nintraocular lymphoma\\njaw-winking syndrome\\nlattice corneal dystrophy type I\\nmacular dystrophy with central cone involvement\\nmicrophthalmia, isolated, with cataract 1\\nmyotonic cataract\\noculodentodigital dysplasia\\nosteochondrodysplatic nanism-deafness-retinitis pigmentosa syndrome\\nposterior polymorphous corneal dystrophy 1\\nReis-Bucklers corneal dystrophy\\nretinitis pigmentosa 3\\nretinitis pigmentosa 68\\nRevesz syndrome\\nStargardt disease\\nThiel-Behnke corneal dystrophy\\nvon Hippel anomaly\\nautosomal dominant nonsyndromic hearing loss 20\\nautosomal dominant nonsyndromic hearing loss 7\\nautosomal recessive nonsyndromic hearing loss 4\\nautosomal recessive nonsyndromic hearing loss 96\\nhearing loss, autosomal recessive 116\\nbifid nose\\nfamilial congenital nasolacrimal duct obstruction\\nnasal cavity lymphoma\\npharyngeal squamous cell carcinoma\\nameloblastoma\\ndentin dysplasia, type IB\\nmaxillary sinus adenoid cystic carcinoma\\nsalivary gland carcinoma ex pleomorphic adenoma\\nacantholytic variant squamous cell breast carcinoma\\nmalignant breast myoepithelioma\\nadult glioblastoma\\nbenign meningioma\\ncentral nervous system primitive neuroectodermal neoplasm\\nchildhood ependymoma\\ndifferentiating neuroblastoma\\nextracranial neuroblastoma\\nglomangioma\\nisolated melanotic schwannoma\\nmalignant soft tissue neoplasm\\nmeningeal melanomatosis\\nnon-central nervous system-localized embryonal carcinoma\\nperitoneal well differentiated papillary mesothelioma\\nrosette-forming glioneuronal tumor of fourth ventricule\\nsupratentorial meningioma\\nacute hemorrhagic leukoencephalitis\\nbacterial meningitis caused by gram-negative bacteria\\nChagas disease\\ncutaneous tuberculosis\\nEscherichia coli meningitis\\ngonococcal keratitis\\ninfection by Trypanosoma rhodesiense\\nlatent early syphilis\\nmucocutaneous leishmaniasis\\nparasitic myositis\\nQueensland tick typhus\\nspinal arachnoiditis\\nTogaviridae infectious disease\\nviral hemorrhagic fever\\nAlzheimer disease 6\\nfetal alcohol syndrome\\nneurodegeneration with brain iron accumulation\\nspinocerebellar ataxia 52\\nWoodhouse-Sakati syndrome\\nATM-related cancer predisposition\\nbilateral diffuse uveal melanocytic proliferation disease\\ncerebellar hypoplasia-intellectual disability-congenital microcephaly-dystonia-anemia-growth retardation syndrome\\ncongenital aphakia-iris hypoplasia-microphthalmia-microcornea syndrome\\nectrodactyly-polydactyly syndrome\\nfamilial long QT syndrome\\nglioma susceptibility 6\\nhypotrichosis-deafness syndrome\\nJoubert syndrome 33\\nlong QT syndrome\\nMeier-Gorlin syndrome 4\\nmotor developmental delay due to 14q32.2 paternally expressed gene defect\\nPallister-W syndrome\\nprostate cancer/brain cancer susceptibility\\nsevere early-onset obesity-insulin resistance syndrome due to SH2B1 deficiency\\nthyrocerebrorenal syndrome\\nvan den Bosch syndrome\\n14q11.2 microduplication syndrome\\n3q26 microduplication syndrome\\nadducted thumbs-arthrogryposis syndrome, Christian type\\natherosclerosis-deafness-diabetes-epilepsy-nephropathy syndrome\\nblepharophimosis - intellectual disability syndrome, Ohdo type\\ncerebral malformation, seizures, hypertrichosis, and overlapping fingers\\nchromosome 17q23.1-q23.2 deletion syndrome\\nchromosome Xp11.23-p11.22 duplication syndrome\\ncongenital hypotonia, epilepsy, developmental delay, and digital anomalies\\ndeafness-oligodontia syndrome\\ndistal monosomy 4q\\nENDOVE syndrome, limb-brain type\\nfused mandibular incisors\\nhydrocephaly-tall stature-joint laxity syndrome\\nintellectual developmental disorder with or without peripheral neuropathy\\nKIF7-related ciliopathy\\nLiang-Wang syndrome\\nMcKusick-Kaufman syndrome\\nmicrocornea, rod-cone dystrophy, cataract, and posterior staphyloma 1\\nmultinodular goiter-cystic kidney-polydactyly syndrome\\noculo-palato-cerebral syndrome\\npartial duplication of chromosome 8\\nPitt-Hopkins or Pitt-Hopkins-like syndrome\\nRamos-Arroyo syndrome\\nRobin sequence-oligodactyly syndrome\\nsyncope, familial vasovagal\\ntrisomy 20p\\nWDPCP-related ciliopathy","ids":"mfEOACJHAAAdSAAAWh8AAPBHAAB8NwAA2V8AAPYiAADFKgAA4/cOABQRAAA3HgAAQn8AAMHQDgBSggAALy4AAJk3AABvHwAAojEAADowAADWhwEAvDAAAKs/AAAyRwAAQ0cAANsnAACtKAAAgagAAEo5AADkPAAA6UMAABbWAADo4w4Adx8AADCAAABW7AAAfJ8OABMcAADlPAAAdU8AAH40AAC+QgAAjJ8OANYuAACN0Q4AEkgAAAtQAAD3NgwA2yEAANBEAABOAAAAVkYAAO5/AABSJgAAXR8AAFYnAACARAAAvn8AADQ1AADeGwAAFywAAH2vCgDULQAAA0EAACBEAAAxNgAA/00AAOpGAAB4JQAA2B8AAFabDgBiLAAAn/gMABWBAADUHwAArysAALMrAAA/NQwA700AAHgrAABnRAAAWScAADxGAACRiAEAyA0AAMJFAAA2iAEAGIgBAJBpDwB0SgAAhRMAAOUMAACDUgAA100AALsOAADpDQAA3yUAAN4rAAA9CAAAwSEAAKxLAADqSwAAzh4AAHlAAACDMQAAMi4AABw+AAAkYQAA/38AAJwsAABEGQAABkoAANOHAQAC0Q4ACy4AANkiAADnRgAAyH8AADDtAAAhNAAAAzIAAHmIAQAkJAAAQR4AAE0kAAAlRwAAvB4AAB8gAAAjSwAARXcAADk5AAAhJQAAvTYAAHl4AAC2eAAAZIMAAEMSAAC+JQAAsogBAM43AABqNgAANYcBANs0AAA7LgAA0kwAAAFLAACtSQAANTkAAJk1AACsPAAAyDcAAPVFAACxPAAAVBQAAJKDAACZiwAAbU8AAPAyAAD44w4APX8AAG4HAABpQAAAPgUAAMcIAADz9g4A0YgBAFgzAAAcgAAAJjYAAK0aAADERAAA+BEAABomAADTEQAAlB0AAJoOAABWBQAAayEAADsZAABQQgAAuhsAAMlfAADINQAAsTsAAEKfDgDkrwoAdfIOABEgAAB8TQAAzj4AAMcqAACqRgAATRMAAEg1AACJIQAAWKgAAHcuAAAUKgAA3TEAAE82DAC5NgwAMy4AAJKeDgClTwAAJRwNAPAKAAD8hgAAtyIAACeeDgBeUQAAbikAACklAAD4EwAA6hgAAJ45AAB6SAAAxRAAAJYcAADHFwAAdUkAAJh2AAATnA4ACD0AABQQAABHGAAAJwwAAFgcAAC7AwAA8kMAAHMRAAB0SQAA6RAAAMgyAACxRwAAFJwOAJEzAAClRQAAJVMAAAU1AAC0RgAAPEgAALYQAACkQAAAJxwNAMYoAADRNQAAoUoAAJR2AADNIQAAYjQAAENfAAC2CgAAGSIAAEQ3AAASHgAAAEAAAJo1AACrUAAAqNEOANMOAACFQwAATtYAAD4vAACYJgAAwDQAAGYQAAAqDgAAqksAAOhDAAAASQAARmsAAL0kAADfNgAAhiMAAFF5AABpHQAA6J4OAMtJAAC8LwAAZTYMAFaoAAD+HAAArRkAALavCgDWMAAAd5sOAIJLAAD3SAAAEicAAIUeAAAq7QAA+/cOAIMoAAASKwAAIhwAAPs2AACIJAAAwhwAAHEwAAAgOgAAVFQAAOZGAABliAEA/xAAAAofAADUHAAAszgAADsfAACPEQAArx8AAJFCAADSHAAACy8AAPMnAADzNwAABicAAJlLAACxKwAAgU8AANgsAABCKwAAtSoAAKo1AACGgwAAbgAAAL8eAABqBAAAGAIAAINFAADjrwoAmRgAAAMZAACFEAAAlg8AANJQAADuCwAAgAIAAJYNAABTCwAAvQoAAPsIAABAiQAAPWAAAKARAACwQwAA3BgAAGBBAAB/+QwAxC0AAGGjAACkBQAAvFUAAGEaAAD0EgAAtVUAANqfAADjFgAAAD8AAF4EAAACIQAAYRcAAKdGAAApLQAAiz4AAINHAACq+A4AyyQAAG6vCgB70Q4A64sAAIL4DADEIwAA40oAACczAABlRgAAH4IAAIoJAAB3NAAAzTgAANQpAABhLAAASkYAAJAnAAACKgAAw0EAAKZNAAAUIgAAiyIAAG8lAAD1IgAAtjMAALwoAAANgAAAgSMAALdNAAADeQAAjB4AAJMkAABoHA0AzzYMAHaAAACXJAAAbIMAAAAeAAApJgAAIUIAAPz2DgDWHAAANyAAANIvAADMQQAA2q8KAA==","cat":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQICAgICAgICAgICAgICAgICAgMDAwMDAwMDBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBQUFBQUFBQUGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHCAgICAgICAgICAkJCQkJCQkJCQkJCQkJCQkJCQkKCgoKCgoKCgoKCgoKCwsLCwsLCwsLCwsLCwsLCwsLCwwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ4ODg4ODw8PDxAQEBARERISEhISEhISEhISEhISExMTExMTExMTExMTExMUFBQUFBUVFRUVFRUVFRUVFRUVFRUVFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFg==","cats":"AQAgAAEAAAABACAAAQAAAAEAIAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAIAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABACAAAQAAAAEAAAABAAAAAQAAAAEAIAABACAAAQAgAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAIAABAAAAAQAAAAEAIAACACAAAwAAAAIAAAACAAAAAwAAAAIAAAACAAAAAgAgAAMAIAACAAAAAgAgAAMAAAACAAAAAgAAAAIAAAACACAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAgAAAAIAIAACAAAAAgAAAAIAAAACAAAAAwAAAAIAAAACAAAAAgAAAAIAIAADAAAAAgAAAGYABABmAAQAZgAEAAYQAAAGAAQABgAEAAYQBAAGAAQADwgEAAcABAAGAAQAZgAEAAYAAAAPCAQAhSAgAAYABAAGACAABggEAAgABAAIAAAACAAAAAgAAAAIAAQACQAkAAgAIAAIAAQAEAAAABEAIAARAAAAEwAAABAAAAARAAAAEAAAABAAAAARAAAAEAAAABAAAAAQAAAAEAAgABAAAAARAAAAEQAAABEAAAAQAAAAEQAAABEAAAAQAAAAEAAAABAAAAAQAAAAEAAAABIAAAASAAAAEwAAABEAAAARACAAEQAgABAAAAATAAAAEgAAABEAAAAQAAAAIAAAACAAAAAgAAAAIAAAADAAAAAgAAAAIAAgACIAAABAAAAAYAAEAGAAIABgAAQAYgAAAGAAAABAAAAAYAAAAEAAAABAAAAAQAAAAEIAAABgAAAAYAAgAGAABABgAAQAQAAEAGAAAABiAAAAYgAAAGAAAABgAAAAQAAAAGgABABoAAQAkQAAAIAAAACAAAAAggAAAIAQAACAAAAAggAAAIAAIACAAAAAgAAAAIIAAACAAAAA4gAgAIEgAACAACAAgAAgAOIAIACTIAAAoAAAAIEAAACCAAAAgAAAAIAAAACAAAAAggAgAIAAAACAEAAAAAEAAAABIAACAQAAAgEAAAARIAAAAQQAAAEEAAABIACAAQAAAAEEAIAiIAAAAgQACAIAABgCIAAAAgAAGAIAAAgCBAAAAgQACAIEAAgCBAAAAgQAAAIAAAACBAAYAiAACAIEABgSAAAAAgAAAAIAAAACIAAQBAAAAAQEAAIVIAAQBAAAAAQEAAAEBAAABAAAAAQAAFAEAAAABAAAAAQAAAIFIAAABAAAiggAAAgIBAAACAQAGAgAAAgIIAACCCAACAgAAAkIIAAACAQACAgAAAgIBAAACAAAaggAAAAIBAAJCAAAAAgAAAgIBAACCAQAAAgAAAAQAAAgEAAAEhAAAAEQAAAAEAAAABAgAAAQIAAAEAAAABAAABgQBAAQECAAABAAAAAQAAAAEAAAEBAAAAAQAAAYEAQAABAAAAAQAAAgEAAAABAgAAAQAAAYEAQAEBAAAAEgAAAAMAAAACAAAAAgAAAQIAAAASAAAAAgAAABICAAATAEABAgAAABIAAAQSAEAAEgIAAAIAAAASAAAAAgAAADICAAAjAgAAAgIAAAIAAAACAAAAEgAAABIAAAATAgAAEgAAAAIAAAACAAAABAAAAAQAAAAEAAAABAAAAAQAAAAoAAAACAAABBgQQAAIMEAAIABQACAAEAB4MFAAACBQAAAAYAAAAGAAEABAABAAQAAQAEAAEABAABAAQAAQAEAAAABAABAAQAAAAEAAEABAAAAAQAAAAEAAEABAABAAQAAQAIAAEACAAAAAgAABAIAAEACAAAOAgAAAAIAAAICAAAAAgAAgAIAAAACAABAAgAAAAIAAAACAABABAAAQAwABEAEAABABAAGQgQAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","flags":"JBcnDycJXwkfCBEfCAkLHxlfGwkRFxcXBz0LAxuXFwspCQkPCX+1fxsXFQsJFzcRXyYxFwsdHw8FOztfPwEfnxc/FxUfHw1PBStfCwsRFxcUHycRERcRERGVExETERERCRkRPxc3GxcfG4URKz8XXzEJHx+fCQkZHxEfPB8XGxeFCxsJRxkJGRFfEVsrcR8fHx8XXxkHW1cXMQcHFy8BCxEXEREIEV8LbxGXAQkRHxEBWxEHHwsbFwUYCT8HFxsXMw83JS8LCwFRHwUHKRAVCykBCT8RETvXEz8THysFhRERF58RFhEnE18XBXsXETudFxEXCRsfFysLCxETHz8/Fz8ACRcXCwkfGRERBxcHGx8ZPysPARc/AQEfEQkPCRcHfx8LCB8bHRtfGx87FVdRFz8fCwsxPTUbHxsbPx8fBBsbGxsLFw8RERcIEREREQEREREREREHEREHFBcRGwEXAREBEQERhxEZEZcZNJ8IXzElLyc9/yknK3F7Pz0pJz09FxcfHR8JHx8JHQcJHx0MEQ0fCR8fhwgfHQkXEQ==","syn":"AAEABAEDCAEMAAEDAgAEAwUPBAICBgAAAAIEAgQACwEABAECAAgBAQUGAAIABAQDDAABAAIGBAICAgYEAwECBAMDBwAHBgAMAAEFAgIABAkAAgIAAhUEAgQYAwQFMwQIAQMZEAYJHgcEBQICAwUbBgEACgMEAQIFAQADBRAIBQcBAQgCAwMDAgAMAAUDAAMKBAEBAwQCBgoBAAAAAgkAAQIAAwAAAQ0CAwAGAAMADwEABAUACwMFAQAAAAMAAAMDBQUHAgMHAgEBBwADAAEABAACAQcGAwYBCQoGBQIAARAECxUEAAQBAwsGAAUCDAUCBQQBAAgEAwICBAwCBQQIAQYAAAkFAgQGBQIBAAMAAQIFBQICAAAHAQEJBAAEAAEABAUCAAYJAgUICAUGBQsUBAsKAgQACgEGEgUFBwURAAoFCAUCAAIEBQcAAgIBAwYCEQUBAAEACQQBAgUAAwMGDAAAAgEEAAACAgcFBwIACAAAAQACCQIAAgIFAgQCAAQCAgQAAwUCBgMBBAUCAQQAAQEHAQYBAgAIAQQNAQ==","xref":"AwUEBwQEBwUJBAUHBAUFBgUHBgYEBwQFBAYFBAUIBwUECAQFBA4GCgUHBAUFBAgBDwEEBAUICwcFBQUHBwEHCgULBgkHCAYMBAUKBQUBBAYCCQQBCRABAQEICwcEBAUGBQoJCwoLDQcGCAcEBQYNCQEECQgKBQQFCQELCw0JBQsEBQUFBAQEBQcOAQUHAQgIBwgGBQYFBggJBwQGDAYCBAULBwcBAQoFBwoKCwUFCQcFBwcGCgQECAQDBAkEBAULCgcLBQgGBgMBDwQEBAkFBgQFBQcHBQUHBRAJDAQEBAUHBxEIBAUEBggGBQYEBgUIBwcGBAQHBwQEBQUFDQcKBQgBBAgKBQUHBQUDBgkEBQYFCQUKAgYIAwUJDgUHBQcFDQwFAwgGBwUJCAoFBQ4BCQ0HBAUJCgMHCQYFCQwKAgYGBgUFBgYFBwsDBgYFBQUGCAYFAwYCBQYEBQYFCgQNBQgIBgUKBwgIBAcGCgkBCgEEBQQGCwQEBQoFBwcEBAcHBAQFBwgFBwkEBgUEBwcEAQUKBAcHBgEGBgUHAQ==","kids":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKoAAgAAAAAAAQAAAAAAAAAAAAcAAwAAAAAAAAAAAAAAAAACAAEACAAAAAAAAAAAAAAAAAACAAAAAAAAAAsAAAAAAAAABAAAAAAAAAAAAAAAAAADAAAACQACAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAB8AAwADAAAAAAAAAAAAAAABAAAAAAAAAGgBAAAAAAIABAAAAAAAAAAAAAcAAAAAAAAACwAAAAAAAAAGAAAAAAAAAAAAAgAAAAAAAAAAAAoAAAACAAAAAAAbAAAAAAAAAAYAAAACABwAAAAAAAAAAAAAAAAAAAAMAAAAAgAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAQAAAAAAAAACAAAACAACAAAAAAAAAAAAAAAAAAkABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAABAAAAAAAAAADAAAAAAAAAAAAAAAAAAIAAAAAAAAAAQADAAMAAAAAAAAACAAAAAQABwALAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAYAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAFAAAAAAAAAAAAKQAAAAAAAAAAAAAABAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAFAAIAAAACAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAwAEAAAAAAACAAAAAAABAAAAEQABAAAABAACAAAA+QAAAAAAAAAAAAAAAAABAAAAAgAAAAAAAAAAAAAAAgAAAAAABwAUAAAAAAAUAAAAAAAAAAAAAAAAAAAAGQAAAAAAAAAaAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAABwAEAAAAAAAAAAAAAgA=","depth":"BQgFCQUECAYJCAgIBQcHBQcHBwcGBQUHBQUIBQYECQcEBgYFBgMFBQcGBwYGCAQHBQYGCAcHBggHBQYFBQYGBQcECAcGBwcHBgYIBggGBgYHCAQHBgYFBQYFBgUGBgcIBwUGBgYFBQgFBgUJBAUICAcHBwgGBwYHBwUHBAcHBgUGCAgHBgcJCAYGBggHBggFBQYGBQcICAYIBQYHBwYGBgUGBwUGCQYIBggGBwcGBggFBgYIBgYGCAcHCAUEBgkHBQUEBQUHBgYGBQYIBgYIBQUEBgQGBwUECAQKBQUGBgcHBQcHBQcFCAYFBgYFBgYGBwgECAYIBQYGBQcKBAQEBwQIBwcEBQYGBQoHBQMGBgUGBAQGBgQGBwcEBAcFCAYFAwgFBwYGBgcFBwUFCAUHCAQGBwYGBQQGBgcHBAcGBgcHBwcHBAUGBgUGBwgKBgoIBwcGBgkHBwgLCAcIBgcGBwcGBwkHBgcIBwYIBAUHBgMFBAQEBQQEBQQFBAQDBAQEBwgGBQkFCAcFBAgGBQcFBQUGBQcHBgUHBQUHBQ=="};
+
+(function attachExtensions(){
+ if(window.app&&window.app.world&&window.RareAtlasInteractive){
+  try{
+   (${installAtlasComputers.toString()})();
+   (${moveAtlasComputers.toString()})();
+   (${installAtlasMonitorOutput.toString()})();
+   (${installAtlasPrint.toString()})();
+   (${installMondoFloor.toString()})();
+  }catch(error){console.error("Atlas extensions:",error);}
+ }else requestAnimationFrame(attachExtensions);
+})();
+`;
+  const addition="<script>"+startup+"<"+"/script>";
+  const complete=/<\/body\s*>/i.test(base)?base.replace(/<\/body\s*>/i,()=>addition+"</body>"):base+addition;
+  document.open();document.write(complete);document.close();
+ }catch(error){
+  notice.textContent="Rare Atlas could not open: "+error.message;console.error(error);
+ }
+})();
+</script>
+</body>
+</html>

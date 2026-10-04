@@ -11,7 +11,9 @@
     "load": "node loader/build.js",
     "load:deep": "node loader/deep/run.js",
     "load:check": "node loader/check.js",
-    "load:upload": "node loader/upload.js"
+    "load:upload": "node loader/upload.js",
+    "load:mondo": "node loader/mondo/build.js",
+    "liveloop:build": "node liveloop/build.js"
   },
   "dependencies": {
     "three": "^0.170.0"

@@ -29,6 +29,7 @@ what was searched, and says what evidence would change the answer.
 | Server | `api/` | Looks things up in the graph, checks that every claim has a source, and mints short-lived voice sessions |
 | Atlas | `src/` | The world, the desk, the voice agent and a typed search box |
 | Apps | `mobile/` | The same atlas wrapped for iOS and Android |
+| Mondo floor | `loader/mondo/`, `src/world/`, `liveloop/` | A lower level of the world where every rare disease in the Mondo ontology is a tile drawn from its own record. Built and tested. |
 
 ## Two layers of evidence
 
@@ -39,6 +40,41 @@ what was searched, and says what evidence would change the answer.
 
 Outside the deep cluster the atlas answers from the wide layer and says plainly
 that no verified patient-group link exists yet.
+
+## The Mondo floor
+
+The world has a second level. A stairwell beside the library leads down to a
+floor laid out as a mosaic: one tile for each of the 16,459 diseases in the
+rare subset of the [Mondo Disease Ontology](https://mondo.monarchinitiative.org/),
+sorted into galleries by Mondo's body-system categories and alphabetical along
+each ring. Every tile is an image drawn by a shader from that disease's own
+record, so the metadata is visible before any name is read:
+
+- colour: the gallery (nervous system, blood, skin, and so on);
+- glyph: a circle for a disease, a hexagon for a syndromic disease, a square
+  for a disease group, sized by how many subtypes sit beneath it;
+- dots: whether GARD, NORD, Orphanet and OMIM list it;
+- bars: synonyms on the left, cross-references on the right;
+- a line under the glyph when the record carries a definition.
+
+Walking close turns the nearest tiles into cards with the name and id. The
+panel searches names, walks to a gallery, filters by source and opens the
+Mondo record. `O` shows the whole floor from above; `Esc` returns upstairs.
+
+Rebuild the data from the latest Mondo release (downloads about 100 MB):
+
+    npm run load:mondo                     # from the Mondo release
+    npm run load:mondo -- --dir ./my-files # from a folder of per-disease JSON files
+
+It writes `data/build/mondo-floor.json` (full records) and
+`data/build/mondo-floor.compact.json` (typed arrays for the world). The compact
+file is committed at `public/mondo/` so the world can fetch it from this
+repository. The LiveLoop state is produced by `npm run liveloop:build` and
+saved as the next state of the world; it also carries a small sample so the
+floor still renders when nothing can be fetched.
+
+Mondo is CC BY 4.0. The floor shows ontology terms, not patient data, and is
+not medical advice.
 
 ## Running it
 
