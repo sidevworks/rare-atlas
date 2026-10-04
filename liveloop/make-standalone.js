@@ -21,12 +21,38 @@ if (!source) throw new Error('Give the path of the downloaded state.');
 const state = readFileSync(source, 'utf8');
 
 // The base library, as the state carries it.
-const packed = state.match(/fetch\("data:text\/html;base64,([A-Za-z0-9+/=]+)"\)/);
+const packed = state.match(/data:text\/html;base64,([A-Za-z0-9+\/=]+)/);
 if (!packed) throw new Error('This state does not carry the base library.');
 const base = Buffer.from(packed[1], 'base64').toString('utf8');
 
 const runtimeBlock = /<script data-asksary-runtime="threejs-inline">[\s\S]*?<\/script>\s*/;
-if (!runtimeBlock.test(base)) throw new Error('The base library has no inlined runtime to replace.');
+
+// A state built on top of an earlier standalone page carries that page (which
+// already loads Three.js itself) and one script that extends it. Keep the
+// script as it is and only swap the inlined runtime for the public release.
+if (!runtimeBlock.test(base)) {
+  const shim = `<script type="module">
+import * as THREE from '${THREE_URL}';
+window.THREE = THREE;
+window.Atlas3D = { THREE };
+for (const held of document.querySelectorAll('script[data-state]')) {
+  const script = document.createElement('script');
+  script.textContent = held.textContent;
+  held.replaceWith(script);
+}
+</script>`;
+  const layered = state
+    .replace(runtimeBlock, '')
+    .replace(/<meta name="asksary-[^>]*>\n?/g, '')
+    .replace(/<script>/, '<script type="text/plain" data-state>')
+    .replace(/AskSary3D/g, 'Atlas3D')
+    .replace(/<\/body\s*>/i, () => `${shim}\n</body>`);
+  const dir = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'public', 'world');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(path.join(dir, 'index.html'), layered);
+  console.log(`public/world/index.html: ${layered.length.toLocaleString()} characters (from ${state.length.toLocaleString()}), layered on an earlier standalone page`);
+  process.exit(0);
+}
 
 // The state's own script defines the extension functions, then builds the
 // text it appends to the base. Run just that much here to get the text.
