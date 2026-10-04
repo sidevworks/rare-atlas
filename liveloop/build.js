@@ -24,7 +24,7 @@ const extensions = read('liveloop/atlas-extensions.js');
 const floor = read('src/world/mondo-floor.js').replace(/\nif\(typeof window[^\n]*\n?$/, '\n');
 
 // Every SAMPLE_STEP-th record, so the sample spans every gallery.
-const SAMPLE_STEP = 40;
+const SAMPLE_STEP = 160;
 let sample = null;
 const compactPath = path.join(repo, 'data/build/mondo-floor.compact.json');
 if (existsSync(compactPath)) {
