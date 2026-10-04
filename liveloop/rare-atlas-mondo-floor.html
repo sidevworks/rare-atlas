@@ -508,8 +508,8 @@ function installMondoFloor(){
   cube(g,metal,0,.98,1.7,2.6,.05,.05);
   const light=new THREE.PointLight("#9fd2df",2,6,2);light.position.set(0,.6,0);g.add(light);
   cube(g,glow,0,-1.55,-1.6,2.2,.03,.03);
-  cube(g,metal,-1.9,1.25,-1.9,.05,2.5,.05);
-  textPlane(g,(ctx,W,H)=>{ctx.fillStyle="#102531";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);ctx.fillStyle="#d9e9ef";ctx.font="bold 56px Georgia";ctx.fillText("MONDO FLOOR  ↓",28,78);ctx.fillStyle="#a9c4d0";ctx.font="28px sans-serif";ctx.fillText("Level −1 · every rare disease in the Mondo ontology,",28,128);ctx.fillText("laid out as images by body system. Walk down or press E.",28,166);},3.4,1.1,-.2,2.1,-1.92,Math.PI);
+  cube(g,metal,-1.6,1.5,-1.9,.05,3,.05);
+  textPlane(g,(ctx,W,H)=>{ctx.fillStyle="#102531";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#789ba7";ctx.lineWidth=3;ctx.strokeRect(3,3,W-6,H-6);ctx.fillStyle="#d9e9ef";ctx.font="bold 56px Georgia";ctx.fillText("MONDO FLOOR  ↓",28,78);ctx.fillStyle="#a9c4d0";ctx.font="28px sans-serif";ctx.fillText("Level −1 · every rare disease in the Mondo ontology,",28,128);ctx.fillText("laid out as images by body system. Walk down or press E.",28,166);},2.6,.84,-.2,2.55,-1.92,Math.PI);
  })();
 
  // Lower level: floor disc, ceiling to hide the library above, hub column.
@@ -848,7 +848,7 @@ gl_FragColor=vec4(col,vAlpha);}`}));
       if(r<FLOOR_R-2.5&&r>.9){w.cam.p.x=nx;w.cam.p.z=nz;w.cam.target.x+=step.x;w.cam.target.z+=step.z;}}
      w.cam.p.y=LEVEL_Y+EYE;
     }
-    for(const l of galleryLabels.children)if(l.userData.label)l.lookAt(w.cam.p);
+    for(const l of galleryLabels.children)if(l.userData.label){l.lookAt(w.cam.p);l.visible=state.overview||Math.hypot(l.position.x-w.cam.p.x,l.position.z-w.cam.p.z)>9;}
     updateCards();
     state.near=false;hint.hidden=true;
    }else{
