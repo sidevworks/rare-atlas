@@ -44,7 +44,7 @@ for (const held of document.querySelectorAll('script[data-state]')) {
   const layered = state
     .replace(runtimeBlock, '')
     .replace(/<meta name="asksary-[^>]*>\n?/g, '')
-    .replace(/<script>/, '<script type="text/plain" data-state>')
+    .replace(/^<script>/gm, '<script type="text/plain" data-state>')
     .replace(/AskSary3D/g, 'Atlas3D')
     .replace(/<\/body\s*>/i, () => `${shim}\n</body>`);
   const dir = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'public', 'world');
